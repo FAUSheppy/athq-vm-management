@@ -16,7 +16,7 @@ listen {name}
 HA_PROXY_TEMPLATE_SNI = '''
 frontend {subdomain}.{basedomain}
     bind 0.0.0.0:80
-    bind 0.0.0.0:443 ssl
+    bind 0.0.0.0:443 {ssl}
     http-request redirect scheme https unless {{ ssl_fc }}
     default_backend {name}
 
@@ -32,6 +32,7 @@ class VM:
         self.hostname = args.get("hostname")
         self.subdomains = args.get("subdomains")
         self.ports = args.get("ports")
+        self.terminateSSL = args.get("terminate-ssl")
         self.network = args.get("network") or "default"
         self.lease = self._get_lease_for_hostname()
         self.ip = self.lease.get("ipaddr")
@@ -65,8 +66,14 @@ class VM:
         # https components #
         for subdomain in self.subdomains:
             compositeName = "-".join((self.hostname, subdomain.replace(".","-")))
+
+            # check ssl termination #
+            ssl = ""
+            if self.terminateSSL:
+                ssl = "ssl"
+
             component = HA_PROXY_TEMPLATE_SNI.format(name=compositeName, basedomain=BASE_DOMAIN,
-                                                     ip=self.ip, subdomain=subdomain)
+                                                     ip=self.ip, subdomain=subdomain, ssl=ssl)
             components.append(component)
 
         return components
