@@ -17,11 +17,11 @@ HA_PROXY_TEMPLATE_SNI = '''
 frontend {subdomain}.{basedomain}
     bind 0.0.0.0:80
     bind 0.0.0.0:443 ssl
-    http-request redirect scheme https unless { ssl_fc }
+    http-request redirect scheme https unless {{ ssl_fc }}
     default_backend {name}
 
 backend {name}
-    server srv1 {ip} check maxconn 20 ssl
+    server srv1 {ip} check maxconn 20
 
 '''
 
@@ -33,8 +33,8 @@ class VM:
         self.subdomains = args.get("subdomains")
         self.ports = args.get("ports")
         self.network = args.get("network") or "default"
-        self.lease = _get_lease_for_hostname()
-        self.ip = lease.get("ipaddr")
+        self.lease = self._get_lease_for_hostname()
+        self.ip = self.lease.get("ipaddr")
 
     def _get_lease_for_hostname(self):
         
@@ -54,11 +54,11 @@ class VM:
         # port forwarding components #
         for pObj in self.ports:
             name = str(pObj.get("name")).replace(" ", "")
-            portOrRange = pObj.get("port").replace(" ", "")
+            portOrRange = str(pObj.get("port")).replace(" ", "")
             proto = pObj.get("proto") or "tcp"
             compositeName = "-".join((self.hostname, name, portOrRange, proto))
 
-            component = HA_PROXY_TEMPLATE_PORT.format(name=compositeName, port=port,
+            component = HA_PROXY_TEMPLATE_PORT.format(name=compositeName, port=portOrRange,
                                                       proto=proto, ip=self.ip)
             components.append(component)
 
