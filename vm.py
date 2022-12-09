@@ -1,6 +1,8 @@
 import libvirt
 
-HA_PROXY_TEMPLATE = '''
+BASE_DOMAIN = "new.atlantishq.de"
+
+HA_PROXY_TEMPLATE_PORT = '''
 listen {name}
     bind 0.0.0.0:{port}
     mode {proto}
@@ -8,6 +10,19 @@ listen {name}
     timeout client  180000
     timeout client  180000
     server srv1 {ip}
+
+'''
+
+HA_PROXY_TEMPLATE_SNI = '''
+frontend {subdomain}.{basedomain}
+    bind 0.0.0.0:80
+    bind 0.0.0.0:443 ssl
+    http-request redirect scheme https unless { ssl_fc }
+    default_backend {name}
+
+backend {name}
+    server srv1 {ip} check maxconn 20 ssl
+
 '''
 
 class VM:
@@ -35,14 +50,23 @@ class VM:
     def dumpHAProxyComponents(self):
             
         components = []
+
+        # port forwarding components #
         for pObj in self.ports:
             name = str(pObj.get("name")).replace(" ", "")
             portOrRange = pObj.get("port").replace(" ", "")
             proto = pObj.get("proto") or "tcp"
             compositeName = "-".join((self.hostname, name, portOrRange, proto))
 
-            component = HA_PROXY_TEMPLATE.format(name=compositeName, port=port,
-                                                 proto=proto, ip=self.ip)
+            component = HA_PROXY_TEMPLATE_PORT.format(name=compositeName, port=port,
+                                                      proto=proto, ip=self.ip)
+            components.append(component)
+
+        # https components #
+        for subdomain in self.subdomains:
+            compositeName = "-".join((self.hostname, subdomain.replace(".","-")))
+            component = HA_PROXY_TEMPLATE_SNI.format(name=compositeName, basedomain=BASE_DOMAIN,
+                                                     ip=self.ip, subdomain=subdomain)
             components.append(component)
 
         return components
