@@ -17,12 +17,16 @@ HA_PROXY_TEMPLATE_SNI = '''
 frontend {subdomain}.{basedomain}
     bind 0.0.0.0:80
     bind 0.0.0.0:443 {ssl}
-    http-request redirect scheme https unless {{ ssl_fc }}
+    http-request redirect scheme https unless is_acme {{ ssl_fc }}
     default_backend {name}
 
 backend {name}
-    server srv1 {ip} check maxconn 20
+    server srv1 {ip} check port 80 maxconn 20
 
+'''
+
+HA_PROXY_STATIC_ACLS = '''
+acl is_acme path -i -m beg /.well-known/acme-challenge/
 '''
 
 class VM:
