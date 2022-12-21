@@ -1,0 +1,10 @@
+server {
+
+    # {{ comment }}
+
+    listen {{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
+    proxy_pass {{ targetip }}:$server_port;
+    {% if transparent %} proxy_bind $remote_addr transparent; {% endif }
+    proxy_timeout 10s;
+    proxy_responses 1;
+}
