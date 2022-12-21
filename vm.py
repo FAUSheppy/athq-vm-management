@@ -1,31 +1,9 @@
 import libvirt
-
-BASE_DOMAIN = "new.atlantishq.de"
-
-HA_PROXY_TEMPLATE_PORT = '''
-listen {name}
-    bind 0.0.0.0:{port}
-    mode {proto}
-    timeout connect 4000
-    timeout client  180000
-    timeout client  180000
-    server srv1 {ip}
-
-'''
-
-HA_PROXY_TEMPLATE_SNI = '''
-frontend {subdomain}.{basedomain}
-    bind 0.0.0.0:80
-    bind 0.0.0.0:443 ssl
-    http-request redirect scheme https unless {{ ssl_fc }}
-    default_backend {name}
-
-backend {name}
-    server srv1 {ip} check maxconn 20
-
-'''
+import jinja2
 
 class VM:
+
+    environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
     def __init__(self, args):
 
@@ -47,26 +25,49 @@ class VM:
         
         raise ValueError("Hostname {} doesn't have a DHCP lease".format(self.hostname))
 
-    def dumpHAProxyComponents(self):
-            
-        components = []
-
+    def dumpStreamComponents(self):
+       
         # port forwarding components #
-        for pObj in self.ports:
-            name = str(pObj.get("name")).replace(" ", "")
-            portOrRange = str(pObj.get("port")).replace(" ", "")
-            proto = pObj.get("proto") or "tcp"
-            compositeName = "-".join((self.hostname, name, portOrRange, proto))
+        components = []
+        template = self.environment.get_template("nginx_server_block.conf.j2")
 
-            component = HA_PROXY_TEMPLATE_PORT.format(name=compositeName, port=portOrRange,
-                                                      proto=proto, ip=self.ip)
+        for portStruct in self.ports:
+
+            name = str(portStruct.get("name")).replace(" ", "")
+            portstring = str(portStruct.get("port")).replace(" ", "")
+            transparent = portStruct.get("transparent")
+            proto = portStruct.get("proto") or "tcp"
+            isUDP = proto == "udp"
+
+            compositeName = "-".join((self.hostname, name, portstring, proto))
+
+            component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
+                                            transparent=transparent)
             components.append(component)
 
+        return components
+
+    def dumpServerComponents(self):
+
         # https components #
-        for subdomain in self.subdomains:
-            compositeName = "-".join((self.hostname, subdomain.replace(".","-")))
-            component = HA_PROXY_TEMPLATE_SNI.format(name=compositeName, basedomain=BASE_DOMAIN,
-                                                     ip=self.ip, subdomain=subdomain)
+        components = []
+        template = self.environment.get_template("nginx_server_block.conf.j2")
+        targetport = 80
+
+        if all([type(e) == dict for e in self.subdomains]):
+            for subdomain in self.subdomains:
+                compositeName = "-".join((self.hostname, subdomain["name"].replace(".","-")))
+                targetport = subdomain["port"]
+                component = template.render(targetip=self.ip, targetport=targetport, 
+                                servernames=[subdomain["name"]], comment=compositeName)
+                components.append(component)
+
+        elif any([type(e) == dict for e in self.subdomains]):
+            raise ValueError("Mixed subdomains not allowed - must be all complex or all simple")
+        else:
+            compositeName = "-".join((self.hostname, self.subdomains[0].replace(".","-")))
+            component = template.render(targetip=self.ip, targetport=targetport, 
+                            servernames=self.subdomains, comment=compositeName)
             components.append(component)
 
         return components
