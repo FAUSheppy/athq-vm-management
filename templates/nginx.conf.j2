@@ -2,9 +2,11 @@ user www-data;
 worker_processes auto;
 pid /run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
+worker_rlimit_nofile 30000;
 
 events {
-	worker_connections 768;
+	worker_connections {{ worker_connections }};
+    multi_accept on;
 }
 
 http {
@@ -49,7 +51,7 @@ http {
         # disable logging
         access_log off;
 
-        include locations/acme-challenge.conf;
+        include acme-challenge.conf;
         location /{
         	return 302 https://$host$request_uri;
         }
