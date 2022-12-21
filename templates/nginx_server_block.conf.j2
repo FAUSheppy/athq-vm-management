@@ -5,11 +5,12 @@ server{
     listen 443 ssl;
     listen [::]:443 ssl;
 
-    {% if servernames %}
-    server_name {% for s in servernames %} {{ s }} {% endfor %};
-    {% endif %}
+    {% if servernames %}server_name{% for s in servernames %} {{ s }}{% endfor %};{% endif %}
 
-    include locations/acme-challenge.conf;
-    
-    proxy_pass http://{{ targetip }}:{{ targetport }};
+    include acme-challenge.conf;
+
+    location / {    
+        proxy_pass http://{{ targetip }}:{{ targetport }};
+    }
 }
+
