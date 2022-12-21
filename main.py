@@ -11,6 +11,7 @@ location /.well-known/acme-challenge/ {
 if __name__ == "__main__":
 
     FILE = "vms.json"
+    print(vm.HA_PROXY_STATIC_ACLS)
     with open(FILE) as f:
         jsonList = json.load(f)
         vmList = []

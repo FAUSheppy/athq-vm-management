@@ -1,6 +1,10 @@
 import libvirt
 import jinja2
 
+HA_PROXY_STATIC_ACLS = '''
+acl is_acme path -i -m beg /.well-known/acme-challenge/
+'''
+
 class VM:
 
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
@@ -10,6 +14,7 @@ class VM:
         self.hostname = args.get("hostname")
         self.subdomains = args.get("subdomains")
         self.ports = args.get("ports")
+        self.terminateSSL = args.get("terminate-ssl")
         self.network = args.get("network") or "default"
         self.lease = self._get_lease_for_hostname()
         self.ip = self.lease.get("ipaddr")
