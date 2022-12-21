@@ -1,10 +1,6 @@
 import libvirt
 import jinja2
 
-HA_PROXY_STATIC_ACLS = '''
-acl is_acme path -i -m beg /.well-known/acme-challenge/
-'''
-
 class VM:
 
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
@@ -34,7 +30,7 @@ class VM:
        
         # port forwarding components #
         components = []
-        template = self.environment.get_template("nginx_server_block.conf.j2")
+        template = self.environment.get_template("nginx_stream_block.conf.j2")
 
         for portStruct in self.ports:
 
