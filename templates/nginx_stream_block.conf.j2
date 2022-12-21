@@ -7,6 +7,6 @@ server {
     proxy_responses 1;
     proxy_pass {{ targetip }}:$server_port;
 
-    {% if transparent %} proxy_bind $remote_addr transparent; {% endif %}
+    {% if transparent %} proxy_bind $remote_addr{% if udp %}:$remote_port{% endif %} transparent; {% endif %}
 }
 
