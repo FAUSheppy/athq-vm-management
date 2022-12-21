@@ -48,6 +48,33 @@ class VM:
 
         return components
 
+    def dumpIptables(self, remove=False):
+
+        entries = []
+        BASE = "iptables -t mangle -{option} "
+        RULE = "PREROUTING -p {proto} -s {ip} {port} -j MARK --set-xmark 0x1/0xffffffff"
+        PORT_SIMPLE = "--sport {port}"
+        PORT_MULTI  = "--match multiport --sports {port}"
+
+        option = "A"
+        if remove:
+            option = "D"
+
+        for portStruct in filter(lambda p: p.get("transparent"), self.ports):
+
+            # port match #
+            port = portStruct.get("port")
+            partport = PORT_SIMPLE.format(port=port)
+            if type(port) == str and "-" in port:
+                port = port.replace("-", "")
+                part_port = PORT_MULTI.format(port=port)
+
+            entry = BASE.format(option=option)
+            entry += RULE.format(ip=self.ip, port=partport, proto=portStruct.get("proto", "tcp"))
+            entries.append(entry)
+
+        return entries
+
     def dumpServerComponents(self):
 
         # https components #

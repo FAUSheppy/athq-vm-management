@@ -23,6 +23,18 @@ if __name__ == "__main__":
             except ValueError as e:
                 print(e, file=sys.stderr)
 
+        with open("/etc/nginx/iptables.sh", "w") as f:
+            f.write("ip route add local 0.0.0.0/0 dev lo table 100")
+            f.write("ip rule add fwmark 1 lookup 100")
+            for vmo in vmList:
+                [ f.write(c) for c in vmo.dumpIptables()]
+
+        with open("/etc/nginx/iptables-clear.sh", "w") as f:
+            f.write("ip route delete local 0.0.0.0/0 dev lo table 100")
+            f.write("ip rule delete fwmark 1 lookup 100")
+            for vmo in vmList:
+                [ f.write(c) for c in vmo.dumpIptables(remove=True)]
+
         with open("/etc/nginx/stream_include.conf", "w") as f:
             for vmo in vmList:
                 [ f.write(c) for c in vmo.dumpStreamComponents()]
