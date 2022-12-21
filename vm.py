@@ -52,9 +52,8 @@ class VM:
 
         entries = []
         BASE = "iptables -t mangle -{option} "
-        RULE = "PREROUTING -p {proto} -s {ip} {port} -j MARK --set-xmark 0x1/0xffffffff"
+        RULE = "PREROUTING -p {proto} -s {ip} {port} -j MARK --set-xmark 0x1/0xffffffff\n"
         PORT_SIMPLE = "--sport {port}"
-        PORT_MULTI  = "--match multiport --sports {port}"
 
         option = "A"
         if remove:
@@ -66,8 +65,8 @@ class VM:
             port = portStruct.get("port")
             partport = PORT_SIMPLE.format(port=port)
             if type(port) == str and "-" in port:
-                port = port.replace("-", "")
-                part_port = PORT_MULTI.format(port=port)
+                port = port.replace("-", ":").replace(" ","")
+                partport = PORT_SIMPLE.format(port=port)
 
             entry = BASE.format(option=option)
             entry += RULE.format(ip=self.ip, port=partport, proto=portStruct.get("proto", "tcp"))
