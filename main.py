@@ -11,7 +11,6 @@ location /.well-known/acme-challenge/ {
 if __name__ == "__main__":
 
     FILE = "vms.json"
-    print(vm.HA_PROXY_STATIC_ACLS)
     with open(FILE) as f:
         jsonList = json.load(f)
         vmList = []
@@ -20,16 +19,14 @@ if __name__ == "__main__":
                 vmo = vm.VM(obj)
                 vmList.append(vmo)
             except ValueError as e:
-                print(e)
+                print(e, file=sys.stderr)
        
         with open("./build/stream_include.conf", "w") as f:
             for vmo in vmList:
-                [ print(c) for c in vmo.dumpStreamComponents()]
                 [ f.write(c) for c in vmo.dumpStreamComponents()]
 
         with open("./build/http_include.conf", "w") as f:
             for vmo in vmList:
-                [ print(c) for c in vmo.dumpServerComponents()]
                 [ f.write(c) for c in vmo.dumpServerComponents()]
 
         with open("./build/acme-challenge.conf", "w") as f:
