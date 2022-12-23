@@ -11,6 +11,7 @@ server{
 
     location / {    
         proxy_pass http://{{ targetip }}:{{ targetport }};
+        proxy_set_header Host $http_host;
     }
 }
 
