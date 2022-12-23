@@ -14,6 +14,10 @@ class VM:
         self.network = args.get("network") or "default"
         self.lease = self._get_lease_for_hostname()
         self.ip = self.lease.get("ipaddr")
+        self.proxy_pass_options = args.get("proxy_pass_options")
+        self.proxy_pass_blob = ""
+        if self.proxy_pass_options:
+            self.proxy_pass_blob = "\n".join(self.proxy_pass_options)
 
     def _get_lease_for_hostname(self):
         
@@ -86,7 +90,8 @@ class VM:
                 compositeName = "-".join((self.hostname, subdomain["name"].replace(".","-")))
                 targetport = subdomain["port"]
                 component = template.render(targetip=self.ip, targetport=targetport, 
-                                servernames=[subdomain["name"]], comment=compositeName)
+                                servernames=[subdomain["name"]], comment=compositeName,
+                                proxy_pass_blob=self.proxy_pass_blob)
                 components.append(component)
 
         elif any([type(e) == dict for e in self.subdomains]):
@@ -94,7 +99,8 @@ class VM:
         else:
             compositeName = "-".join((self.hostname, self.subdomains[0].replace(".","-")))
             component = template.render(targetip=self.ip, targetport=targetport, 
-                            servernames=self.subdomains, comment=compositeName)
+                            servernames=self.subdomains, comment=compositeName,
+                            proxy_pass_blob=self.proxy_pass_blob)
             components.append(component)
 
         return components

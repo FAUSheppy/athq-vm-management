@@ -27,6 +27,12 @@ http {
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
 
+    # needed for weechat #
+    map $http_upgrade $connection_upgrade {
+            default upgrade;
+            '' close;
+    }
+
 	ssl_certificate         {{ ssl_path }}/fullchain.pem;
 	ssl_certificate_key     {{ ssl_path }}/privkey.pem;
 	ssl_protocols TLSv1.2 TLSv1.3;
