@@ -3,7 +3,7 @@ server {
     # {{ comment }}
     listen {{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
 
-    proxy_timeout 10s;
+    proxy_timeout {{ proxy_timeout }};
     proxy_responses 1;
     proxy_pass {{ targetip }}:$server_port;
 

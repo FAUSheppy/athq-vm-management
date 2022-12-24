@@ -43,11 +43,12 @@ class VM:
             transparent = portStruct.get("transparent")
             proto = portStruct.get("proto") or "tcp"
             isUDP = proto == "udp"
+            proxy_timeout = portStruct.get("proxy_timeout") or "10s"
 
             compositeName = "-".join((self.hostname, name, portstring, proto))
 
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
-                                            transparent=transparent)
+                                        transparent=transparent, proxy_timeout=proxy_timeout)
             components.append(component)
 
         return components
