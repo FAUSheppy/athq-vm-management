@@ -12,8 +12,15 @@ class VM:
         self.ports = args.get("ports")
         self.terminateSSL = args.get("terminate-ssl")
         self.network = args.get("network") or "default"
-        self.lease = self._get_lease_for_hostname()
-        self.ip = self.lease.get("ipaddr")
+        self.isExternal = args.get("external")
+
+        if self.isExternal:
+            self.lease = None
+            self.ip = None
+        else:
+            self.lease = self._get_lease_for_hostname()
+            self.ip = self.lease.get("ipaddr")
+
         self.proxy_pass_options = args.get("proxy_pass_options")
         self.proxy_pass_blob = ""
         if self.proxy_pass_options:
@@ -46,6 +53,9 @@ class VM:
             proxy_timeout = portStruct.get("proxy_timeout") or "10s"
 
             compositeName = "-".join((self.hostname, name, portstring, proto))
+
+            if self.isExternal:
+                self.ip = portStruct["ip"]
 
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
                                         transparent=transparent, proxy_timeout=proxy_timeout)
