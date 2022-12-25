@@ -52,6 +52,9 @@ if __name__ == "__main__":
             domains = []
             for vmo in vmList:
                 for subdomain in vmo.subdomains:
+                    if vmo.noTerminateACME:
+                        print("Not terminating ACME for: {}".format(subdomain))
+                        continue
                     if type(subdomain) == dict:
                         domains.append(subdomain["name"])
                     else:

@@ -14,7 +14,6 @@ class VM:
         self.network = args.get("network") or "default"
         self.isExternal = args.get("external")
         self.noTerminateACME = args.get("no-terminate-acme")
-        print(self.noTerminateACME)
 
         if self.isExternal:
             self.lease = None
