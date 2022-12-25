@@ -13,6 +13,8 @@ class VM:
         self.terminateSSL = args.get("terminate-ssl")
         self.network = args.get("network") or "default"
         self.isExternal = args.get("external")
+        self.noTerminateACME = args.get("no-terminate-acme")
+        print(self.noTerminateACME)
 
         if self.isExternal:
             self.lease = None
@@ -102,7 +104,7 @@ class VM:
                 targetport = subdomain["port"]
                 component = template.render(targetip=self.ip, targetport=targetport, 
                                 servernames=[subdomain["name"]], comment=compositeName,
-                                proxy_pass_blob=self.proxy_pass_blob)
+                                proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME)
                 components.append(component)
 
         elif any([type(e) == dict for e in self.subdomains]):
@@ -111,7 +113,7 @@ class VM:
             compositeName = "-".join((self.hostname, self.subdomains[0].replace(".","-")))
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=self.subdomains, comment=compositeName,
-                            proxy_pass_blob=self.proxy_pass_blob)
+                            proxy_pass_blob=self.proxy_pass_blob, acme= not self.noTerminateACME)
             components.append(component)
 
         return components

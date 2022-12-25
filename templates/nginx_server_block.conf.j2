@@ -7,7 +7,9 @@ server{
 
     {% if servernames %}server_name{% for s in servernames %} {{ s }}{% endfor %};{% endif %}
 
+    {% if acme %}
     include acme-challenge.conf;
+    {% endif %}
 
     location / {    
         proxy_pass http://{{ targetip }}:{{ targetport }};
