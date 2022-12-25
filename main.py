@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
         with open("/etc/nginx/cert.sh", "w") as f:
 
-            f.write("certbot certonly --webroot -w /var/www \\")
+            f.write("certbot certonly --webroot -w /var/www \\\n")
             domains = []
             for vmo in vmList:
                 for subdomain in vmo.subdomains:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                         domains.append(subdomain)
 
             for d in set(domains):
-                f.write("    -d {} \\".format(d))
+                f.write("    -d {} \\\n".format(d))
 
             f.write("--rsa-key-size 2048 --expand")
 
