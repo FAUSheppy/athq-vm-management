@@ -10,6 +10,7 @@ class VM:
         self.hostname = args.get("hostname")
         self.subdomains = args.get("subdomains")
         self.ports = args.get("ports")
+        self.check = not args.get("nocheck")
         self.terminateSSL = args.get("terminate-ssl")
         self.network = args.get("network") or "default"
         self.isExternal = args.get("external")
@@ -95,25 +96,17 @@ class VM:
         # https components #
         components = []
         template = self.environment.get_template("nginx_server_block.conf.j2")
-        targetport = 80
 
-        if all([type(e) == dict for e in self.subdomains]):
-            for subdomain in self.subdomains:
-                compositeName = "-".join((self.hostname, subdomain["name"].replace(".","-")))
-                targetport = subdomain["port"]
-                component = template.render(targetip=self.ip, targetport=targetport, 
-                                servernames=[subdomain["name"]], comment=compositeName,
-                                proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME)
-                components.append(component)
+        for subdomain in self.subdomains:
 
-        elif any([type(e) == dict for e in self.subdomains]):
-            raise ValueError("Mixed subdomains not allowed - must be all complex or all simple")
-        else:
-            compositeName = "-".join((self.hostname, self.subdomains[0].replace(".","-")))
+            if type(subdomain) != dict:
+                raise ValueError("Subdomain must be object containing 'name' ")
+
+            compositeName = "-".join((self.hostname, subdomain["name"].replace(".","-")))
+            targetport = subdomain.get("port") or 80
             component = template.render(targetip=self.ip, targetport=targetport, 
-                            servernames=self.subdomains, comment=compositeName,
-                            proxy_pass_blob=self.proxy_pass_blob, acme= not self.noTerminateACME)
+                            servernames=[subdomain["name"]], comment=compositeName,
+                            proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME)
             components.append(component)
 
         return components
-

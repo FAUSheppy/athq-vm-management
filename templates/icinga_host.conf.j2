@@ -1,0 +1,31 @@
+object Host "{{ hostname }}" {
+
+    import "generic-host"
+    
+    name      = "{{ hostname }}"
+    address   = "{{ address }}"
+    vars.remote   = "true"
+    vars.linux    = "true"
+    
+    max_check_attempts = 7
+    retry_interval     = 1m
+    
+    vars.notification["mail"] = {
+      groups = ["icingaadmins"]
+    }
+
+    {% for website_name, url in websites %}
+    vars.http_vhosts["{{ website_name }}"] = {
+        {% if url %}
+        http_uri = "{{ url }}"
+        {% else %}
+        http_uri = "/"
+        {% endif %}
+        http_address = "https://{{ website_name }}"
+        http_ssl = true
+        http_onredirect = "follow"
+    }
+    {% endfor %}
+
+}
+

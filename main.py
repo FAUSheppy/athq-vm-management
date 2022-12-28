@@ -2,6 +2,7 @@ import json
 import vm
 import sys
 import jinja2
+import icinga
 
 ACME_CONTENT = '''
 location /.well-known/acme-challenge/ {
@@ -74,3 +75,6 @@ if __name__ == "__main__":
                 content = template.render(nginxJson)
 
                 f.write(content)
+        
+        # dump icinga master
+        icinga.createMasterHostConfig(vmList)
