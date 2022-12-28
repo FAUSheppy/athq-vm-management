@@ -1,0 +1,10 @@
+---
+{% for vmo in vmList %}
+- hosts:
+  roles:
+    - monitoring-client
+    - monitoring-logs
+  {% if vmo.hostname == "monitoring" %}
+    - monitoring-master
+  {% endif %}
+{% endif %} 
