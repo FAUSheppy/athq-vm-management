@@ -78,3 +78,14 @@ if __name__ == "__main__":
         
         # dump icinga master
         icinga.createMasterHostConfig(vmList)
+
+        # dump ansible
+        with open("./ansible/hosts.ini", "w") as f:
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
+            template = env.get_template("hosts.ini.j2")
+            for vmo in set(vmList):
+                if vmo.ansible:
+                    f.write(template.render(hostname=vmo.hostname, ip=vmo.ip))
+                    f.write("\n")
+
+

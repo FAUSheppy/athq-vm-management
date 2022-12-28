@@ -15,6 +15,7 @@ class VM:
         self.network = args.get("network") or "default"
         self.isExternal = args.get("external")
         self.noTerminateACME = args.get("no-terminate-acme")
+        self.ansible = not args.get("noansible")
 
         if self.isExternal:
             self.lease = None
@@ -38,6 +39,13 @@ class VM:
                     return l
         
         raise ValueError("Hostname {} doesn't have a DHCP lease".format(self.hostname))
+
+    def __hash__(self):
+        return hash(self.hostname)
+
+    def __eq__(self, other):
+        return self.hostname == other.hostname
+
 
     def dumpStreamComponents(self):
        

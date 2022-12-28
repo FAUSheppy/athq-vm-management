@@ -3,7 +3,7 @@ environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./te
 
 def createMasterHostConfig(vmList):
     template = environment.get_template("icinga_host.conf.j2") 
-    with open("build/icinga_master_hosts.conf", "w") as f:
+    with open("ansible/files/icinga_master_hosts.conf", "w") as f:
         for vmo in vmList:
 
             if not vmo.check:
