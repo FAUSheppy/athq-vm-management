@@ -1,4 +1,5 @@
 build/
+ansible/
 vms.json
 config/
 __pycache__/
