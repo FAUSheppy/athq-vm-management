@@ -1,5 +1,7 @@
 build/
+*.swp
 ansible/
 vms.json
 config/
 __pycache__/
+password.txt

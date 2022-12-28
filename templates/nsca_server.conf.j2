@@ -1,0 +1,13 @@
+command_file = "/run/icinga2/cmd/icinga2.cmd"
+user = "nagios"
+log_level = 4
+
+{% for vmo in vmList %}
+authorize "{{ vmo.hostname }}" {
+    password = "{{ password }}"
+    hosts = "{{ vmo.hostname }}"
+    services = {
+        "*",
+    }
+}
+{% endfor %}

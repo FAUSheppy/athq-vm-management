@@ -13,6 +13,10 @@ location /.well-known/acme-challenge/ {
 
 if __name__ == "__main__":
 
+    password = None
+    with open("password.txt") as f:
+        password = f.read().strip("\n")
+
     FILE = "./config/vms.json"
     with open(FILE) as f:
         jsonList = json.load(f)
@@ -88,4 +92,9 @@ if __name__ == "__main__":
                     f.write(template.render(hostname=vmo.hostname, ip=vmo.ip))
                     f.write("\n")
 
-
+        # dump ansible
+        with open("./ansible/files/nsca_server.conf", "w") as f:
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
+            template = env.get_template("nsca_server.conf.j2")
+            f.write(template.render(vmList=set(filter(lambda x: x.ansible, vmList)),
+                                    password=password))
