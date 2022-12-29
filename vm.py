@@ -68,7 +68,8 @@ class VM:
                 self.ip = portStruct["ip"]
 
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
-                                        transparent=transparent, proxy_timeout=proxy_timeout)
+                                        transparent=transparent, proxy_timeout=proxy_timeout,
+                                        comment=compositeName)
             components.append(component)
 
         return components
