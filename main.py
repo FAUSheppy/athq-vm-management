@@ -43,6 +43,8 @@ if __name__ == "__main__":
         with open("/etc/nginx/stream_include.conf", "w") as f:
             for vmo in vmList:
                 [ f.write(c) for c in vmo.dumpStreamComponents()]
+            for vmo in set(vmList):
+                [ f.write(c) for c in vmo.dumpSshFowardsNginx()]
 
         with open("/etc/nginx/http_include.conf", "w") as f:
             for vmo in vmList:

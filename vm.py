@@ -16,6 +16,7 @@ class VM:
         self.isExternal = args.get("external")
         self.noTerminateACME = args.get("no-terminate-acme")
         self.ansible = not args.get("noansible")
+        self.sshOutsidePort = None
 
         if self.isExternal:
             self.lease = None
@@ -70,6 +71,21 @@ class VM:
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
                                         transparent=transparent, proxy_timeout=proxy_timeout,
                                         comment=compositeName)
+            components.append(component)
+
+        return components
+
+    def dumpSshFowardsNginx(self):
+
+        components = []
+        template = self.environment.get_template("nginx_stream_block.conf.j2")
+        if not self.isExternal:
+            self.sshOutsidePort = 7000 + int(self.ip.split(".")[-1])
+            component = template.render(targetip=self.ip, udp=False,
+                                            portstring=self.sshOutsidePort,
+                                            targetportoverwrite=7000,
+                                            transparent=False, proxy_timeout="24h",
+                                            comment="ssh-{}".format(self.hostname))
             components.append(component)
 
         return components
