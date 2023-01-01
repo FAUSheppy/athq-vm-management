@@ -6,8 +6,15 @@ server {
 
     proxy_timeout {{ proxy_timeout }};
     proxy_responses 1;
-    proxy_pass {{ targetip }}:$server_port;
 
-    {% if transparent %} proxy_bind $remote_addr{% if udp %}:$remote_port{% endif %} transparent; {% endif %}
+    {% if targetportoverwrite %}
+    proxy_pass {{ targetip }}:{{ targetportoverwrite }};
+    {% else %}
+    proxy_pass {{ targetip }}:$server_port;
+    {% endif %}
+
+    {% if transparent %}
+    proxy_bind $remote_addr:{% if targetportoverwrite %}{{ targetportoverwrite }}{% else %}$remote_port{% endif %} transparent;
+    {% endif %}
 }
 
