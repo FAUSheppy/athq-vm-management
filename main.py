@@ -11,6 +11,8 @@ location /.well-known/acme-challenge/ {
 }
 '''
 
+MASTER_ADDRESS = "atlantishq.de"
+
 if __name__ == "__main__":
 
     password = None
@@ -100,3 +102,11 @@ if __name__ == "__main__":
             template = env.get_template("nsca_server.conf.j2")
             f.write(template.render(vmList=set(filter(lambda x: x.ansible, vmList)),
                                     password=password))
+
+        # dump direct connect ssh-config
+        with open("./ssh_config_for_clients", "w") as f:
+            for vmo in filter(lambda x: x.sshOutsidePort, set(vmList)):
+                f.write("Host {}\n".format(vmo.hostname + "." + MASTER_ADDRESS))
+                f.write("    Port {}\n".format(vmo.sshOutsidePort))
+                f.write("    User root\n")
+                f.write("\n")
