@@ -21,7 +21,7 @@ object Host "{{ hostname }}" {
         {% else %}
         http_uri = "/"
         {% endif %}
-        http_address = "https://{{ website_name }}"
+        http_address = "{{ website_name }}"
         http_ssl = true
         http_onredirect = "follow"
     }
