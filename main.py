@@ -69,7 +69,10 @@ if __name__ == "__main__":
                     else:
                         domains.append(subdomain)
 
+            f.write("    -d {} \\\n".format(MASTER_ADDRESS))
             for d in set(domains):
+                if d == MASTER_ADDRESS:
+                    continue
                 f.write("    -d {} \\\n".format(d))
 
             f.write("--rsa-key-size 2048 --expand")
