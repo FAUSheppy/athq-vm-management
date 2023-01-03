@@ -131,7 +131,8 @@ class VM:
             targetport = subdomain.get("port") or 80
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
-                            proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME)
+                            proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME,
+                            basicauth=subdomain.get("basicauth"))
             components.append(component)
 
         return components

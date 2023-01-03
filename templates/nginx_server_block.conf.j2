@@ -15,6 +15,10 @@ server{
         proxy_pass http://{{ targetip }}:{{ targetport }};
         proxy_set_header Host $http_host;
         {{ proxy_pass_blob }}
+        {% if basicauth %}
+        auth_basic "{{ basicauth }}";
+        auth_basic_user_file /etc/nginx/{{ basicauth }}.htpasswd;
+        {% endif %}
     }
 }
 
