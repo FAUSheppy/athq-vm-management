@@ -1,0 +1,5 @@
+{%- for path in paths -%}
++ {{ path }}{% if not last %}
+{% endif %}
+{%- endfor -%}
+- /**

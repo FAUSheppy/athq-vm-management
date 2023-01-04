@@ -3,6 +3,7 @@ import vm
 import sys
 import jinja2
 import icinga
+import backup
 
 ACME_CONTENT = '''
 location /.well-known/acme-challenge/ {
@@ -113,3 +114,7 @@ if __name__ == "__main__":
                 f.write("    Port {}\n".format(vmo.sshOutsidePort))
                 f.write("    User root\n")
                 f.write("\n")
+
+        # backup #
+        with open("./config/backup.json") as f:
+            backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)

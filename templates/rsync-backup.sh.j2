@@ -1,0 +1,44 @@
+#!/bin/bash                                                                                         
+set -eu
+
+mkdir -p {{ hostname_base }}
+cd {{ hostname_base }}
+
+dest=./
+for x in backup-*; do
+    test -d "$x" || continue
+    dest="../$x" # relative to destination directory
+done
+
+target="backup-$(date '+%Y-%m-%d-%H-%M-%S')"
+target_tmp="partial-$target"
+
+mkdir "$target_tmp"
+
+rsync \
+    --verbose --itemize-changes --human-readable \
+    --archive --acls --xattrs --hard-links --sparse --numeric-ids \
+    --one-file-system \
+    --link-dest="$dest" \
+    --filter="merge ../rsync-filter-{{ hostname_base }}.txt" \
+    root@{{ hostname }}:/ \
+    "$target_tmp"
+
+RSYNC_SUCCESS=$? 
+
+mv "$target_tmp" "$target"
+
+CONTENT_TYPE="Content-Type: application/json"
+ASYNC_ICINGA_ADDRESS="https://async-icinga.atlantishq.de/"
+SERVICE="backup_{{ hostname_base }}"
+TOKEN="{{ token }}"
+
+if [ $RSYNC_SUCCESS -eq 0 ]; then
+    curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
+        '{"service": "${SERVICE}", "token": "${TOKEN}", "status": "OK", "info": ""}'
+else
+    curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
+        '{"service": "${SERVICE}", "token": "${TOKEN}", "status": "CRITICAL", "info": ""}'
+fi
+
+cd ..
