@@ -1,5 +1,7 @@
 import jinja2
 import os
+import json
+
 environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
 def createBackupScriptStructure(backupList, baseDomain=""):
@@ -8,6 +10,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
     rsyncFilterTemplate = environment.get_template("rsync-filter.txt.j2")
 
     scriptNames = []
+    asyncIcingaConf = {}
     for backup in backupList:
 
         hostnameBase = backup["hostname"]
@@ -49,6 +52,10 @@ def createBackupScriptStructure(backupList, baseDomain=""):
 
         path = "./build/backup/"
 
+        # async icinga config #
+        asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
+                                    { "timeout" : "7d", "token" : icingaToken }}
+
         # write script #
         scriptName = "rsync-backup-{}.sh".format(hostnameBase)
         scriptNames.append(scriptName)
@@ -70,3 +77,8 @@ def createBackupScriptStructure(backupList, baseDomain=""):
             f.write("./{}".format(n))
             f.write("\n")
     os.chmod(os.path.join(path, wrapperName), 0o700)
+
+    # write async icinga dynamic json in ansible #
+    ansibleFilename = "./ansible/files/async-icinga-config-dynamic.json"
+    with open(ansibleFilename, "w") as f:
+        f.write(json.dumps(asyncIcingaConf))
