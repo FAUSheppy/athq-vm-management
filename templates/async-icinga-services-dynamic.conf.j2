@@ -1,0 +1,33 @@
+object Host "AsyncIcinga" {
+
+  import "generic-host"
+
+  address	= "localhost"
+  name      = "async_icinga"
+  vars.async 	= "true"
+  vars.linux 	= "true"
+
+  vars.ssl_address = "async-icinga.atlantishq.de"
+  vars.ssl_port = "443"
+
+  check_command = "http"
+
+  max_check_attempts = 5
+  retry_interval     = 1m
+
+  vars.notification["mail"] = {
+    groups = ["icingaadmins"]
+  }
+
+}
+
+{% for service in asyncIcingaConf.keys() %}
+apply Service "{{ service }}" {
+    import "generic-service"
+    check_command = "gateway"
+    vars.protocol = "https"
+    vars.host = "async-icinga.atlantishq.de"
+    vars.service_name = "{{ service }}"
+    assign where host.name == "async_icinga"
+}
+{% endfor %}

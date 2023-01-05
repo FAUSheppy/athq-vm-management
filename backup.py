@@ -82,3 +82,9 @@ def createBackupScriptStructure(backupList, baseDomain=""):
     ansibleFilename = "./ansible/files/async-icinga-config-dynamic.json"
     with open(ansibleFilename, "w") as f:
         f.write(json.dumps(asyncIcingaConf))
+
+    # write async icinga services in ansible #
+    ansibleFilename = "./ansible/files/async-icinga-services-dynamic.conf"
+    icingaServiceTemplate = environment.get_template("async-icinga-services-dynamic.conf.j2")
+    with open(ansibleFilename, "w") as f:
+        f.write(icingaServiceTemplate.render(asyncIcingaConf=asyncIcingaConf))
