@@ -34,11 +34,11 @@ SERVICE="backup_{{ hostname_base }}"
 TOKEN="{{ token }}"
 
 if [ $RSYNC_SUCCESS -eq 0 ]; then
-    curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
-        '{"service": "${SERVICE}", "token": "${TOKEN}", "status": "OK", "info": ""}'
+  curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
+    \"{\"service\": \"${SERVICE}\", \"token\": \"${TOKEN}\", \"status\": \"OK\", \"info\": \"\"}\"
 else
-    curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
-        '{"service": "${SERVICE}", "token": "${TOKEN}", "status": "CRITICAL", "info": ""}'
+  curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
+    \"{\"service\": \"${SERVICE}\", \"token\": \"${TOKEN}\", \"status\": \"CRITICAL\", \"info\": \"\"}\"
 fi
 
 cd ..
