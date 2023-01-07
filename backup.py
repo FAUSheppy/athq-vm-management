@@ -56,7 +56,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
 
         rsyncScript = rsyncScriptTemplate.render(hostname=hostname, token=icingaToken,
                                                  hostname_base=hostnameBase)
-        rsyncFilter = rsyncFilterTemplate.render(paths=fullPaths)
+        rsyncFilter = rsyncFilterTemplate.render(paths=paths)
 
         path = "./build/backup/"
 
