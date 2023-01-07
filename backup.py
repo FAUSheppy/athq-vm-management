@@ -29,26 +29,34 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         # add base paths for rsync filter (e.g. /var/ for /var/lib/anything/)
         # because we use - /** for excluding anything else #
         basePaths = []
+        fullPaths = []
         for p in paths:
 
-            if not os.path.isabs(p):
+            cur = p
+            options = None
+            if type(p) == dict:
+                cur = p["path"]
+                options = p["options"]
+
+            if not os.path.isabs(cur):
                 print("WARNING: Non-absolute path for backup {} (skipping..)".format(p))
                 continue
-            elif "//" in p:
+            elif "//" in cur:
                 print("WARNING: Illegal double-slash in backup path {} (skipping..)".format(p))
                 continue
-            elif "/" == p:  
+            elif "/" == cur:  
                 print("WARNING: Root (/) is not allowed as backup path (skipping..)".format(p))
                 continue
             else:
-                basePaths.append("/{}/".format(p.split("/")[1]))
+                basePaths.append("/{}/".format(cur.split("/")[1]))
+                fullPaths.append(cur)
 
         # keep order (important!)
-        paths = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in paths ]
+        paths = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
 
         rsyncScript = rsyncScriptTemplate.render(hostname=hostname, token=icingaToken,
                                                  hostname_base=hostnameBase)
-        rsyncFilter = rsyncFilterTemplate.render(paths=paths)
+        rsyncFilter = rsyncFilterTemplate.render(paths=fullPaths)
 
         path = "./build/backup/"
 
