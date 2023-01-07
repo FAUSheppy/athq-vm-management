@@ -48,7 +48,15 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                 print("WARNING: Root (/) is not allowed as backup path (skipping..)".format(p))
                 continue
             else:
-                basePaths.append("/{}/".format(cur.split("/")[1]))
+                tmpPath = "/"
+                for level in cur.split("/")[:-2]:
+                    if not level:
+                        continue
+                    else:
+                        tmpPath += "{}/".format(level)
+                    if not tmpPath == "/":
+                        basePaths.append(tmpPath)
+
                 fullPaths.append(cur)
 
         # keep order (important!)
