@@ -132,7 +132,8 @@ class VM:
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
                             proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME,
-                            basicauth=subdomain.get("basicauth"))
+                            basicauth=subdomain.get("basicauth"),
+                            extra_location=subdomain.get("extra-location"))
             components.append(component)
 
         return components
