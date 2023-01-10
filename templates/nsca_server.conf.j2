@@ -1,6 +1,6 @@
 command_file = "/run/icinga2/cmd/icinga2.cmd"
 user = "nagios"
-log_level = 4
+log_level = 2
 
 {% for vmo in vmList %}
 authorize "{{ vmo.hostname }}" {
