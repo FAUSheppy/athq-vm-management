@@ -47,6 +47,10 @@ class VM:
     def __eq__(self, other):
         return self.hostname == other.hostname
 
+    def __gt__(self, other):
+        if self.hostname != other.hostname:
+            return self.hostname > other.hostname
+        return len(str(self.__dict__)) > len(str(other.__dict__))
 
     def dumpStreamComponents(self):
        
