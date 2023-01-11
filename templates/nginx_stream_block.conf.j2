@@ -13,6 +13,10 @@ server {
     proxy_pass {{ targetip }}:$server_port;
     {% endif %}
 
+    {% if extra_content %}
+    {{ extra_content }}
+    {% endif %}
+
     {% if transparent %}
     proxy_bind $remote_addr:{% if targetportoverwrite %}{{ targetportoverwrite }}{% else %}$remote_port{% endif %} transparent;
     {% endif %}
