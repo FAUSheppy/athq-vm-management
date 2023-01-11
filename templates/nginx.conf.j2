@@ -42,6 +42,9 @@ http {
 	access_log /var/log/nginx/access.log;
 	error_log /var/log/nginx/error.log;
 
+    client_header_buffer_size 5120k;
+    large_client_header_buffers 16 5120k;
+
 	gzip on;
     	
 	proxy_cache_path /tmp/nginx.cache.d keys_zone=default_proxy_cache:10m;
