@@ -45,6 +45,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
             if type(p) == dict:
                 cur = p["path"]
                 options = p["options"]
+                #print(hostname, cur, options, 1)
 
             if not os.path.isabs(cur):
                 print("WARNING: Non-absolute path for backup {} (skipping..)".format(p))
@@ -64,16 +65,18 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                         tmpPath += "{}/".format(level)
                     if not tmpPath == "/":
                         basePaths.append(tmpPath)
-                        pathsToOptions.update({ tmpPath : options })
 
                 fullPaths.append(cur)
-                pathsToOptions.update({ cur : options })
+                pathsToOptions.update({ "{}\t{}".format(hostname, cur) : options })
 
         # keep order (important!)
         pathsAll = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
 
         filterNoHighData = functools.partial(noHighData, hostname, pathsToOptions)
         filterSizeChanged = functools.partial(sizeChanged, hostname, pathsToOptions)
+
+        #print(json.dumps(pathsToOptions, indent=2))
+
         pathsNoHighData        = list(filter(filterNoHighData, pathsAll))
         pathsOnlyIfSizeChanged = list(filter(filterSizeChanged, pathsAll))
         pathsMinimal           = list(filter(filterSizeChanged, pathsNoHighData))
@@ -138,20 +141,18 @@ def createBackupScriptStructure(backupList, baseDomain=""):
 # filters #
 def noHighData(hostname, pathsToOptions, path):
 
-    if "*" in path:
-        return True
+    path = path.replace("*", "")
 
-    options = pathsToOptions[path]
+    options = pathsToOptions.get("{}\t{}".format(hostname, path))
     return not (options and "highdata" in options)
 
 def sizeChanged(hostname, pathsToOptions, path):
 
-    # keep all generated paths #
-    if "*" in path:
-        return True
+    path = path.replace("*", "")
 
     # if there are no options keep it #
-    options = pathsToOptions[path]
+    options = pathsToOptions.get("{}\t{}".format(hostname, path))
+    #print(hostname, path, options)
     if not options or not "onlyifsizechanged" in options:
         return True
 
