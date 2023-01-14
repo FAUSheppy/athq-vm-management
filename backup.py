@@ -6,7 +6,7 @@ import json
 
 environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
-def createBackupScriptStructure(backupList, baseDomain=""):
+def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
 
 
     backupPath = "./build/backup/"
@@ -79,6 +79,14 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                     cmd = cmd.format(hostname, cur)
                     sizeChangeNotifyCommands.append(cmd)
 
+        # async icinga config #
+        asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
+                           { "timeout" : "30d", "token" : icingaToken }}
+
+        # continue for icinga only #
+        if icingaOnly:
+            continue
+
         # keep order (important!)
         pathsAll = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
 
@@ -107,10 +115,6 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         # build filter without high data and without non-size-changed dirs #
         rsyncFilterMinimal = rsyncFilterTemplate.render(paths=pathsMinimal)
 
-        # async icinga config #
-        asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
-                                    { "timeout" : "30d", "token" : icingaToken }}
-
         # write script #
         scriptName = "rsync-backup-{}.sh".format(hostnameBase)
         scriptNames.append(scriptName)
@@ -136,7 +140,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                 f.write(render)
 
         # endfor #
-    
+
     # write wrapper script #
     wrapperName = "wrapper.sh"
     with open(os.path.join(backupPath, wrapperName), "w") as f:

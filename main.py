@@ -58,6 +58,6 @@ if __name__ == "__main__":
                 f.write("\n")
 
     # backup #
-    if args.backup:
-        with open("./config/backup.json") as f:
-            backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)
+    with open("./config/backup.json") as f:
+        backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS,
+                                           icingaOnly=not args.backup)
