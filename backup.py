@@ -1,5 +1,7 @@
 import jinja2
+import functools
 import os
+import subprocess
 import json
 
 environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
@@ -28,6 +30,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
 
         # add base paths for rsync filter (e.g. /var/ for /var/lib/anything/)
         # because we use - /** for excluding anything else #
+        pathsToOptions = dict()
         basePaths = []
         fullPaths = []
         for p in paths:
@@ -56,15 +59,27 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                         tmpPath += "{}/".format(level)
                     if not tmpPath == "/":
                         basePaths.append(tmpPath)
+                        pathsToOptions.update({ tmpPath : options })
 
                 fullPaths.append(cur)
+                pathsToOptions.update({ cur : options })
 
         # keep order (important!)
-        paths = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
+        pathsAll = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
+
+        filterNoHighData = functools.partial(noHighData, hostname, pathsToOptions)
+        filterSizeChanged = functools.partial(sizeChanged, hostname, pathsToOptions)
+        pathsNoHighData        = list(filter(filterNoHighData, pathsAll))
+        pathsOnlyIfSizeChanged = list(filter(filterSizeChanged, pathsAll))
+        pathsMinimal           = list(filter(filterSizeChanged, pathsNoHighData))
 
         rsyncScript = rsyncScriptTemplate.render(hostname=hostname, token=icingaToken,
                                                  hostname_base=hostnameBase)
-        rsyncFilter = rsyncFilterTemplate.render(paths=paths)
+        
+        rsyncFilterAll = rsyncFilterTemplate.render(paths=pathsAll)
+        rsyncFilterNoHighData = rsyncFilterTemplate.render(paths=pathsNoHighData)
+        rsyncFilterOnlyIfSizeChanged = rsyncFilterTemplate.render(paths=pathsOnlyIfSizeChanged)
+        rsyncFilterMinimal = rsyncFilterTemplate.render(paths=pathsMinimal)
 
         path = "./build/backup/"
 
@@ -75,6 +90,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         # write script #
         scriptName = "rsync-backup-{}.sh".format(hostnameBase)
         scriptNames.append(scriptName)
+
         with open(os.path.join(path, scriptName), "w") as f:
             f.write(rsyncScript)
         os.chmod(os.path.join(path, scriptName), 0o700)
@@ -82,7 +98,18 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         # write filter #
         filterName = "rsync-filter-{}.txt".format(hostnameBase)
         with open(os.path.join(path, filterName), "w") as f:
-            f.write(rsyncFilter)
+            f.write(rsyncFilterAll)
+
+        # compose & write alternative rsync filters #
+        alternativeRsyncFilters = [
+            ( "size_changed", rsyncFilterOnlyIfSizeChanged ),
+            ( "no_high_data", rsyncFilterNoHighData ),
+            ( "minimal" , rsyncFilterMinimal )
+        ]
+        for filterType, render in alternativeRsyncFilters:
+            filterType = "rsync-filter-{}-{}.txt".format(hostnameBase, filterType)
+            with open(os.path.join(path, filterName), "w") as f:
+                f.write(render)
 
         # endfor #
     
@@ -104,3 +131,27 @@ def createBackupScriptStructure(backupList, baseDomain=""):
     icingaServiceTemplate = environment.get_template("async-icinga-services-dynamic.conf.j2")
     with open(ansibleFilename, "w") as f:
         f.write(icingaServiceTemplate.render(asyncIcingaConf=asyncIcingaConf))
+
+# filters #
+def noHighData(hostname, pathsToOptions, path):
+
+    if "*" in path:
+        return True
+
+    options = pathsToOptions[path]
+    return not (options and "highdata" in options)
+
+def sizeChanged(hostname, pathsToOptions, path):
+
+    if "*" in path:
+        return True
+
+    options = pathsToOptions[path]
+    if not options:
+        return True
+
+    cmd = ["ssh", hostname,  "-t", "/opt/check_dir_size_for_backup.py", path ]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding="utf-8") 
+    
+    result = json.loads(p.stdout)
+    return result.changed
