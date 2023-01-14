@@ -8,6 +8,11 @@ environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./te
 
 def createBackupScriptStructure(backupList, baseDomain=""):
 
+
+    backupPath = "./build/backup/"
+    if not os.path.isdir(backupPath):
+        os.mkdir(backupPath)
+
     rsyncScriptTemplate = environment.get_template("rsync-backup.sh.j2")
     rsyncFilterTemplate = environment.get_template("rsync-filter.txt.j2")
 
@@ -81,8 +86,6 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         rsyncFilterOnlyIfSizeChanged = rsyncFilterTemplate.render(paths=pathsOnlyIfSizeChanged)
         rsyncFilterMinimal = rsyncFilterTemplate.render(paths=pathsMinimal)
 
-        path = "./build/backup/"
-
         # async icinga config #
         asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
                                     { "timeout" : "7d", "token" : icingaToken }}
@@ -91,13 +94,13 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         scriptName = "rsync-backup-{}.sh".format(hostnameBase)
         scriptNames.append(scriptName)
 
-        with open(os.path.join(path, scriptName), "w") as f:
+        with open(os.path.join(backupPath, scriptName), "w") as f:
             f.write(rsyncScript)
-        os.chmod(os.path.join(path, scriptName), 0o700)
+        os.chmod(os.path.join(backupPath, scriptName), 0o700)
 
         # write filter #
         filterName = "rsync-filter-{}.txt".format(hostnameBase)
-        with open(os.path.join(path, filterName), "w") as f:
+        with open(os.path.join(backupPath, filterName), "w") as f:
             f.write(rsyncFilterAll)
 
         # compose & write alternative rsync filters #
@@ -108,18 +111,18 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         ]
         for filterType, render in alternativeRsyncFilters:
             filterType = "rsync-filter-{}-{}.txt".format(hostnameBase, filterType)
-            with open(os.path.join(path, filterName), "w") as f:
+            with open(os.path.join(backupPath, filterName), "w") as f:
                 f.write(render)
 
         # endfor #
     
     # write wrapper script #
     wrapperName = "wrapper.sh"
-    with open(os.path.join(path, wrapperName), "w") as f:
+    with open(os.path.join(backupPath, wrapperName), "w") as f:
         for n in scriptNames:
             f.write("./{}".format(n))
             f.write("\n")
-    os.chmod(os.path.join(path, wrapperName), 0o700)
+    os.chmod(os.path.join(backupPath, wrapperName), 0o700)
 
     # write async icinga dynamic json in ansible #
     ansibleFilename = "./ansible/files/async-icinga-config-dynamic.json"
