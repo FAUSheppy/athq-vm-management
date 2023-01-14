@@ -102,7 +102,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         os.chmod(os.path.join(backupPath, scriptName), 0o700)
 
         # write filter #
-        filterName = "rsync-filter-{}.txt".format(hostnameBase)
+        filterName = "rsync-filter-{}-.txt".format(hostnameBase)
         with open(os.path.join(backupPath, filterName), "w") as f:
             f.write(rsyncFilterAll)
 
@@ -113,7 +113,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
             ( "minimal" , rsyncFilterMinimal )
         ]
         for filterType, render in alternativeRsyncFilters:
-            filterType = "rsync-filter-{}-{}.txt".format(hostnameBase, filterType)
+            filterName = "rsync-filter-{}-{}.txt".format(hostnameBase, filterType)
             with open(os.path.join(backupPath, filterName), "w") as f:
                 f.write(render)
 

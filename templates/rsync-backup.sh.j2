@@ -4,6 +4,16 @@ set -eu
 mkdir -p {{ hostname_base }}
 cd {{ hostname_base }}
 
+TYPE=""
+if [ -z "$1" ]; then
+    TYPE=$1
+fi
+
+TEST=$(python -c "int('$TYPE' in ['size_changed', 'no_high_data', 'minimal'])^1")
+if [ $TEST -ne 0 ]; then
+    echo Bad Filter Option $1
+fi
+
 dest=./
 for x in backup-*; do
     test -d "$x" || continue
@@ -20,7 +30,7 @@ rsync \
     --archive --acls --xattrs --hard-links --sparse --numeric-ids \
     --one-file-system \
     --link-dest="$dest" \
-    --filter="merge ../rsync-filter-{{ hostname_base }}.txt" \
+    --filter="merge ../rsync-filter-{{ hostname_base }}-${TYPE}.txt" \
     root@{{ hostname }}:/ \
     "$target_tmp"
 
