@@ -1,120 +1,60 @@
 import json
+import argparse
 import vm
 import sys
 import jinja2
 import icinga
 import backup
-
-ACME_CONTENT = '''
-location /.well-known/acme-challenge/ {
-    auth_basic off;
-    alias /var/www/.well-known/acme-challenge/;
-}
-'''
+import nginx
+import pyansible
 
 MASTER_ADDRESS = "atlantishq.de"
 
 if __name__ == "__main__":
 
-    password = None
-    with open("password.txt") as f:
-        password = f.read().strip("\n")
+    parser = argparse.ArgumentParser(description='AtlantisHQ VM Management Script',
+                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument("--backup",          action="store_const", default=False, const=True)
+    parser.add_argument("--skip-ansible",    action="store_const", default=True, const=False)
+    parser.add_argument("--skip-nginx",      action="store_const", default=True, const=False)
+    parser.add_argument("--skip-icinga",     action="store_const", default=True, const=False)
+    parser.add_argument("--skip-ssh-config", action="store_const", default=True, const=False)
+    args = parser.parse_args()
 
     FILE = "./config/vms.json"
+    vmList = []
     with open(FILE) as f:
         jsonList = json.load(f)
-        vmList = []
         for obj in jsonList:
             try:
                 vmo = vm.VM(obj)
                 vmList.append(vmo)
             except ValueError as e:
                 print(e, file=sys.stderr)
+       
+        # dump nginx config #
+        if args.skip_nginx:
+            nginx.dump_config(vmList, MASTER_ADDRESS)
 
-        with open("/etc/nginx/iptables.sh", "w") as f:
-            f.write("ip route add local 0.0.0.0/0 dev lo table 100\n")
-            f.write("ip rule add fwmark 1 lookup 100\n")
-            for vmo in vmList:
-                [ f.write(c) for c in vmo.dumpIptables()]
-
-        with open("/etc/nginx/iptables-clear.sh", "w") as f:
-            f.write("ip route delete local 0.0.0.0/0 dev lo table 100\n")
-            f.write("ip rule delete fwmark 1 lookup 100\n")
-            for vmo in vmList:
-                [ f.write(c) for c in vmo.dumpIptables(remove=True)]
-
-        with open("/etc/nginx/stream_include.conf", "w") as f:
-            for vmo in vmList:
-                [ f.write(c) for c in vmo.dumpStreamComponents()]
-            for vmo in set(vmList):
-                [ f.write(c) for c in vmo.dumpSshFowardsNginx()]
-
-        with open("/etc/nginx/http_include.conf", "w") as f:
-            for vmo in vmList:
-                [ f.write(c) for c in vmo.dumpServerComponents()]
-
-        with open("/etc/nginx/acme-challenge.conf", "w") as f:
-            f.write(ACME_CONTENT)
-
-        with open("/etc/nginx/cert.sh", "w") as f:
-
-            f.write("certbot certonly --webroot -w /var/www \\\n")
-            domains = []
-            for vmo in vmList:
-                for subdomain in vmo.subdomains:
-                    if vmo.noTerminateACME:
-                        print("Not terminating ACME for: {}".format(subdomain))
-                        continue
-                    if type(subdomain) == dict:
-                        domains.append(subdomain["name"])
-                    else:
-                        domains.append(subdomain)
-
-            f.write("    -d {} \\\n".format(MASTER_ADDRESS))
-            for d in set(domains):
-                if d == MASTER_ADDRESS:
-                    continue
-                f.write("    -d {} \\\n".format(d))
-
-            f.write("--rsa-key-size 2048 --expand")
-
-        with open("/etc/nginx/nginx.conf", "w") as f:
-
-            with open("./config/nginx.json") as j:
-                nginxJson = json.load(j)
-                env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
-                template = env.get_template("nginx.conf.j2")
-                content = template.render(nginxJson)
-
-                f.write(content)
-        
         # dump icinga master
-        icinga.createMasterHostConfig(vmList)
+        if args.skip_icinga:
+            icinga.createMasterHostConfig(vmList)
 
         # dump ansible
-        with open("./ansible/hosts.ini", "w") as f:
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
-            template = env.get_template("hosts.ini.j2")
-            for vmo in set(vmList):
-                if vmo.ansible:
-                    f.write(template.render(hostname=vmo.hostname, ip=vmo.ip))
-                    f.write("\n")
-
-        # dump ansible
-        with open("./ansible/files/nsca_server.conf", "w") as f:
-            env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
-            template = env.get_template("nsca_server.conf.j2")
-            f.write(template.render(vmList=sorted(list(set(filter(lambda x: x.ansible, vmList)))),
-                                    password=password))
+        if args.skip_ansible:
+            pyansible.dump_config(vmList)
 
         # dump direct connect ssh-config
-        with open("./ssh_config_for_clients", "w") as f:
-            for vmo in filter(lambda x: x.sshOutsidePort, set(vmList)):
-                f.write("Host {}\n".format(vmo.hostname + "." + MASTER_ADDRESS))
-                f.write("    Port {}\n".format(vmo.sshOutsidePort))
-                f.write("    User root\n")
-                f.write("\n")
+        if args.skip_ssh_config:
+            with open("./ssh_config_for_clients", "w") as f:
+                for vmo in filter(lambda x: x.sshOutsidePort, set(vmList)):
+                    f.write("Host {}\n".format(vmo.hostname + "." + MASTER_ADDRESS))
+                    f.write("    Port {}\n".format(vmo.sshOutsidePort))
+                    f.write("    User root\n")
+                    f.write("\n")
 
         # backup #
-        with open("./config/backup.json") as f:
-            backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)
+        if args.backup:
+            with open("./config/backup.json") as f:
+                backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)
