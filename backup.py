@@ -146,15 +146,22 @@ def noHighData(hostname, pathsToOptions, path):
 
 def sizeChanged(hostname, pathsToOptions, path):
 
+    # keep all generated paths #
     if "*" in path:
         return True
 
+    # if there are no options keep it #
     options = pathsToOptions[path]
-    if not options:
+    if not options or not "onlyifchanged" in options:
         return True
 
+    # check server #
     cmd = ["ssh", hostname,  "-t", "/opt/check_dir_size_for_backup.py", path ]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding="utf-8") 
-    
-    result = json.loads(p.stdout)
-    return result.changed
+    stdout, stderr = p.communicate()
+    if p.wait() != 0:
+        raise OSError("ssh commmand for backup size info failed '{}' - '{}'".format(stderr, stdout))
+
+    # parse response #
+    result = json.loads(stdout)
+    return result["changed"]
