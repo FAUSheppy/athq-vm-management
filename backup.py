@@ -152,7 +152,7 @@ def sizeChanged(hostname, pathsToOptions, path):
 
     # if there are no options keep it #
     options = pathsToOptions[path]
-    if not options or not "onlyifchanged" in options:
+    if not options or not "onlyifsizechanged" in options:
         return True
 
     # check server #
