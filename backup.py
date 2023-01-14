@@ -109,7 +109,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
 
         # async icinga config #
         asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
-                                    { "timeout" : "7d", "token" : icingaToken }}
+                                    { "timeout" : "30d", "token" : icingaToken }}
 
         # write script #
         scriptName = "rsync-backup-{}.sh".format(hostnameBase)
