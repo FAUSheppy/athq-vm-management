@@ -38,6 +38,10 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         pathsToOptions = dict()
         basePaths = []
         fullPaths = []
+
+        # commands for all size changed paths #
+        sizeChangeNotifyCommands = []
+
         for p in paths:
 
             cur = p
@@ -69,6 +73,12 @@ def createBackupScriptStructure(backupList, baseDomain=""):
                 fullPaths.append(cur)
                 pathsToOptions.update({ "{}\t{}".format(hostname, cur) : options })
 
+                # build commands to save new size after backup #
+                if options and "onlyifsizechanged" in options:
+                    cmd = "ssh {} -t /opt/check_dir_size_for_backup.py --save-new-size {}"
+                    cmd = cmd.format(hostname, cur)
+                    sizeChangeNotifyCommands.append(cmd)
+
         # keep order (important!)
         pathsAll = list(set(basePaths)) + [ p.rstrip("/") + "/***" for p in fullPaths ]
 
@@ -82,11 +92,19 @@ def createBackupScriptStructure(backupList, baseDomain=""):
         pathsMinimal           = list(filter(filterSizeChanged, pathsNoHighData))
 
         rsyncScript = rsyncScriptTemplate.render(hostname=hostname, token=icingaToken,
-                                                 hostname_base=hostnameBase)
-        
+                                                 hostname_base=hostnameBase,
+                                                 size_change_commands=sizeChangeNotifyCommands)
+       
+        # build all filter #
         rsyncFilterAll = rsyncFilterTemplate.render(paths=pathsAll)
+
+        # build filter excluding high data #
         rsyncFilterNoHighData = rsyncFilterTemplate.render(paths=pathsNoHighData)
+
+        # build filter excluding size changed no #
         rsyncFilterOnlyIfSizeChanged = rsyncFilterTemplate.render(paths=pathsOnlyIfSizeChanged)
+
+        # build filter without high data and without non-size-changed dirs #
         rsyncFilterMinimal = rsyncFilterTemplate.render(paths=pathsMinimal)
 
         # async icinga config #
@@ -123,7 +141,7 @@ def createBackupScriptStructure(backupList, baseDomain=""):
     wrapperName = "wrapper.sh"
     with open(os.path.join(backupPath, wrapperName), "w") as f:
         for n in scriptNames:
-            f.write("./{}".format(n))
+            f.write("./{} $1".format(n))
             f.write("\n")
     os.chmod(os.path.join(backupPath, wrapperName), 0o700)
 
