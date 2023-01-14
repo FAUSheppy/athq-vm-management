@@ -5,7 +5,7 @@ class VM:
 
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
-    def __init__(self, args):
+    def __init__(self, args, skipVirsh):
 
         self.hostname = args.get("hostname")
         self.subdomains = args.get("subdomains")
@@ -18,7 +18,7 @@ class VM:
         self.ansible = not args.get("noansible")
         self.sshOutsidePort = None
 
-        if self.isExternal:
+        if self.isExternal or skipVirsh:
             self.lease = None
             self.ip = None
         else:

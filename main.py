@@ -24,11 +24,14 @@ if __name__ == "__main__":
 
     FILE = "./config/vms.json"
     vmList = []
+    skipVirsh = not any([args.skip_ansible, args.skip_nginx, 
+                         args.skip_icinga, args.skip_ssh_config])
+        
     with open(FILE) as f:
         jsonList = json.load(f)
         for obj in jsonList:
             try:
-                vmo = vm.VM(obj)
+                vmo = vm.VM(obj, skipVirsh)
                 vmList.append(vmo)
             except ValueError as e:
                 print(e, file=sys.stderr)
