@@ -4,6 +4,7 @@ set -eu
 mkdir -p {{ hostname_base }}
 cd {{ hostname_base }}
 
+TYPE=""
 if [ $# -ne 0 ]; then
     TYPE=$1
 fi
@@ -49,7 +50,7 @@ if [ $RSYNC_SUCCESS -eq 0 ]; then
 
   # if size changed was copied save new size #
   {% if not size_change_commands %}
-      echo No Sizes to notifiy
+      echo No sizes to notifiy
   {% endif %}
   {% for cmd in size_change_commands %}
       {{ cmd }}
