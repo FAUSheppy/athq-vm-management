@@ -33,28 +33,28 @@ if __name__ == "__main__":
             except ValueError as e:
                 print(e, file=sys.stderr)
        
-        # dump nginx config #
-        if args.skip_nginx:
-            nginx.dump_config(vmList, MASTER_ADDRESS)
+    # dump nginx config #
+    if args.skip_nginx:
+        nginx.dump_config(vmList, MASTER_ADDRESS)
 
-        # dump icinga master
-        if args.skip_icinga:
-            icinga.createMasterHostConfig(vmList)
+    # dump icinga master
+    if args.skip_icinga:
+        icinga.createMasterHostConfig(vmList)
 
-        # dump ansible
-        if args.skip_ansible:
-            pyansible.dump_config(vmList)
+    # dump ansible
+    if args.skip_ansible:
+        pyansible.dump_config(vmList)
 
-        # dump direct connect ssh-config
-        if args.skip_ssh_config:
-            with open("./ssh_config_for_clients", "w") as f:
-                for vmo in filter(lambda x: x.sshOutsidePort, set(vmList)):
-                    f.write("Host {}\n".format(vmo.hostname + "." + MASTER_ADDRESS))
-                    f.write("    Port {}\n".format(vmo.sshOutsidePort))
-                    f.write("    User root\n")
-                    f.write("\n")
+    # dump direct connect ssh-config
+    if args.skip_ssh_config:
+        with open("./ssh_config_for_clients", "w") as f:
+            for vmo in filter(lambda x: x.sshOutsidePort, set(vmList)):
+                f.write("Host {}\n".format(vmo.hostname + "." + MASTER_ADDRESS))
+                f.write("    Port {}\n".format(vmo.sshOutsidePort))
+                f.write("    User root\n")
+                f.write("\n")
 
-        # backup #
-        if args.backup:
-            with open("./config/backup.json") as f:
-                backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)
+    # backup #
+    if args.backup:
+        with open("./config/backup.json") as f:
+            backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS)
