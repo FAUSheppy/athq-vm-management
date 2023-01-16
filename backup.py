@@ -29,7 +29,7 @@ def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
         paths = backup["paths"]
         icingaToken = backup["token"]
 
-        if not hostname.replace(".","").isalnum():
+        if not hostname.replace(".","").replace("-","").isalnum():
             print("Warning: Backup hostname is not alphanum: '{}'".format(hostname))
             continue
 
