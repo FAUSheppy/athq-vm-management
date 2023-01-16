@@ -6,3 +6,4 @@ config/
 __pycache__/
 password.txt
 ssh_config_for_clients
+virsh_backup
