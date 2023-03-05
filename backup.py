@@ -81,7 +81,7 @@ def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
 
         # async icinga config #
         asyncIcingaConf |= { "backup_{}".format(hostnameBase) : 
-                           { "timeout" : "30d", "token" : icingaToken }}
+                           { "timeout" : "120d", "token" : icingaToken }}
 
         # continue for icinga only #
         if icingaOnly:
