@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "Doing $1"
+test $@ -eq 1
 TEST=$(python3 -c "print(int('$TYPE' in ['size_changed', 'no_high_data', 'minimal', ''])^1)")
 if [ $TEST -ne 0 ]; then
     echo Bad Filter Option [$TYPE]
@@ -28,10 +29,11 @@ cd ..
 eval `ssh-agent`
 ssh-add ~/.ssh/sheppymaster
 rm -rf ~/athq-vm-management/build/backup/*
-python main.py --skip-nginx --skip-icinga --skip-ansible --skip-ssh-config --backup
+python3 main.py --skip-nginx --skip-icinga --skip-ansible --skip-ssh-config --backup
 
 TARGET=/media/root/bd358053-84a3-498c-9109-cc4f4d5c10d8/sheppy/new_server/
-rm "${TARGET}rsync-*"
+rm ${TARGET}rsync-*
 cp ~/athq-vm-management/build/backup/* $TARGET
 cd $TARGET
-./wrapper $1
+pwd
+./wrapper.sh $1
