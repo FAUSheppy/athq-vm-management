@@ -36,7 +36,7 @@ rm ${TARGET}rsync-*
 cp ~/athq-vm-management/build/backup/* $TARGET
 cd $TARGET
 pwd
-./wrapper.sh nohighdata
+./wrapper.sh no_high_data
 
 # do the THS backup
 cd /media/root/bd358053-84a3-498c-9109-cc4f4d5c10d8/sheppy/ths-data/
