@@ -9,9 +9,10 @@ server{
 
     {% if acme %}
     include acme-challenge.conf;
+    {% endif %}
+
     listen 80;
     listen [::]:80;
-    {% endif %}
     
     {% if extra_location %}
     location {{ extra_location["location"] }} {
