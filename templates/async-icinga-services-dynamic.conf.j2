@@ -15,9 +15,10 @@ object Host "async_icinga" {
   max_check_attempts = 5
   retry_interval     = 1m
 
-  vars.notification["mail"] = {
-    groups = ["icingaadmins"]
-  }
+  # TODO: conditional template in pyansible
+  # vars.notification["mail"] = {
+  #   groups = ["icingaadmins"]
+  # }
 
 }
 

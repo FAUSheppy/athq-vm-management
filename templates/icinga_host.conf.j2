@@ -9,10 +9,11 @@ object Host "{{ hostname }}" {
     
     max_check_attempts = 7
     retry_interval     = 1m
-    
-    vars.notification["mail"] = {
-      groups = ["icingaadmins"]
-    }
+   
+    # TODO condition template? 
+    # vars.notification["mail"] = {
+    #   groups = ["icingaadmins"]
+    # }
 
     {% for website_name, url in websites %}
     vars.http_vhosts["{{ website_name }}"] = {
