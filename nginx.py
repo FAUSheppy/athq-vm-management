@@ -1,5 +1,6 @@
 import jinja2
 import json
+import os
 
 ACME_CONTENT = '''
 location /.well-known/acme-challenge/ {
@@ -66,3 +67,12 @@ def dump_config(vmList, masterAddress):
             content = template.render(nginxJson)
 
             f.write(content)
+
+def check_transparent_proxy_loader():
+    retcode = os.system("systemctl is-enabled nginx-iptables.service")
+    if retcode != 0:
+        print("############################ WARNING ###############################")
+        print("+++ You may have transparent proxy rules but the service to load +++")
+        print("+++ them is not enabled or missing, a restart WILL break your    +++")
+        print("+++ setup! Add see nginx-iptables.service in the project root    +++")
+        print("############################ WARNING ###############################")

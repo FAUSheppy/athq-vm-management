@@ -39,6 +39,7 @@ if __name__ == "__main__":
     # dump nginx config #
     if args.skip_nginx:
         nginx.dump_config(vmList, MASTER_ADDRESS)
+        nginx.check_transparent_proxy_loader()
 
     # dump icinga master
     if args.skip_icinga:
