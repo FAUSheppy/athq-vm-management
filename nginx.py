@@ -12,12 +12,14 @@ location /.well-known/acme-challenge/ {
 def dump_config(vmList, masterAddress):
 
     with open("/etc/nginx/iptables.sh", "w") as f:
+        f.write("#!/bin/bash\n\n")
         f.write("ip route add local 0.0.0.0/0 dev lo table 100\n")
         f.write("ip rule add fwmark 1 lookup 100\n")
         for vmo in vmList:
             [ f.write(c) for c in vmo.dumpIptables()]
 
     with open("/etc/nginx/iptables-clear.sh", "w") as f:
+        f.write("#!/bin/bash\n\n")
         f.write("ip route delete local 0.0.0.0/0 dev lo table 100\n")
         f.write("ip rule delete fwmark 1 lookup 100\n")
         for vmo in vmList:
