@@ -183,7 +183,8 @@ def sizeChanged(hostname, pathsToOptions, path):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding="utf-8") 
     stdout, stderr = p.communicate()
     if p.wait() != 0:
-        raise OSError("ssh commmand for backup size info failed '{}' - '{}'".format(stderr, stdout))
+        raise OSError("ssh commmand for backup size info failed '{}' - '{}' Host: {}".format(
+                stderr, stdout, hostname))
 
     # parse response #
     result = json.loads(stdout)
