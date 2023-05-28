@@ -13,6 +13,12 @@ server{
 
     listen 80;
     listen [::]:80;
+
+    {% if cert_optional %}
+    ssl_client_certificate ca_cert.pem;
+    ssl_verify_client optional;
+    ssl_verify_depth 1;
+    {% endif %}
     
     {% if extra_location %}
     location {{ extra_location["location"] }} {
@@ -28,6 +34,7 @@ server{
         proxy_pass http://{{ targetip }}:{{ targetport }};
         proxy_set_header Host $http_host;
         {{ proxy_pass_blob }}
+        {{ cert_header_line }}
         {% if basicauth %}
         auth_basic "{{ basicauth }}";
         auth_basic_user_file /etc/nginx/{{ basicauth }}.htpasswd;

@@ -134,11 +134,23 @@ class VM:
 
             compositeName = "-".join((self.hostname, subdomain["name"].replace(".","-")))
             targetport = subdomain.get("port") or 80
+            
+            # build cert group #
+            if subdomain.get("cert-group"):
+                cert_group_name = subdomain.get("cert-group")
+                header_line = "proxy_set_header X-Nginx-Cert-Auth $allow_group_{};".format(cert_group_name)
+                cert_optional = True
+            else:
+                header_line = "proxy_set_header X-Nginx-Cert-Auth false;"
+                cert_optional = False
+
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
                             proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME,
                             basicauth=subdomain.get("basicauth"),
-                            extra_location=subdomain.get("extra-location"))
+                            extra_location=subdomain.get("extra-location"),
+                            cert_optional=cert_optional,
+                            cert_header_line=header_line)
             components.append(component)
 
         return components

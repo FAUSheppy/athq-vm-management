@@ -63,9 +63,12 @@ def dump_config(vmList, masterAddress):
     with open("/etc/nginx/nginx.conf", "w") as f:
 
         with open("./config/nginx.json") as j:
+
             nginxJson = json.load(j)
             env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
             template = env.get_template("nginx.conf.j2")
+            mapsTemplate = env.get_template("nginx_maps.j2")
+            nginxJson["maps"] = mapsTemplate.render()
             content = template.render(nginxJson)
 
             f.write(content)

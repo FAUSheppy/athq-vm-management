@@ -1,0 +1,10 @@
+map $ssl_client_s_dn $allow_group_main {
+    default "";
+    ~CN=Sheppy2 true;
+    ~CN=Kathi true;
+}
+
+map $ssl_client_s_dn $allow_group_ths {
+    default "";
+    ~OU=THS true;
+}
