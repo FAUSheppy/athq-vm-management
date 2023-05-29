@@ -1,4 +1,5 @@
 import json
+import os
 import argparse
 import vm
 import sys
@@ -62,3 +63,6 @@ if __name__ == "__main__":
     with open("./config/backup.json") as f:
         backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS,
                                            icingaOnly=not args.backup)
+
+    # copy nginx maps #
+    os.system("rsync templates/nginx_maps.j2 root@192.168.122.104:/data/certificate-manager/")
