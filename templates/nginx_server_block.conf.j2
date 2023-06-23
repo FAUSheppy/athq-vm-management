@@ -9,10 +9,11 @@ server{
 
     {% if acme %}
     include acme-challenge.conf;
-    {% endif %}
-
+    {% else %}
     listen 80;
     listen [::]:80;
+    {% endif %}
+
 
     {% if cert_optional %}
     ssl_client_certificate ca_cert.pem;
@@ -42,3 +43,19 @@ server{
     }
 }
 
+{% if acme %}
+server{
+
+    # {{ comment }}
+    
+    listen 80;
+    listen [::]:80;
+
+    {% if servernames %}server_name{% for s in servernames %} {{ s }}{% endfor %};{% endif %}
+
+
+    include acme-challenge.conf;
+    return 301 https://$host$request_uri;
+
+}
+{% endif %}
