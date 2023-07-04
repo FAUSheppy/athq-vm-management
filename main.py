@@ -65,4 +65,5 @@ if __name__ == "__main__":
                                            icingaOnly=not args.backup)
 
     # copy nginx maps #
-    os.system("rsync templates/nginx_maps.j2 root@192.168.122.104:/data/certificate-manager/")
+    if not args.backup:
+        os.system("rsync templates/nginx_maps.j2 root@192.168.122.104:/data/certificate-manager/")
