@@ -20,6 +20,9 @@ def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
     asyncIcingaConf = {}
     for backup in backupList:
 
+        if backup.get("disabled"):
+            continue
+
         hostnameBase = backup["hostname"]
         if baseDomain:
             hostname = "{}.{}".format(hostnameBase, baseDomain.lstrip("."))
