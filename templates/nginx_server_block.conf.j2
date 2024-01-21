@@ -17,7 +17,11 @@ server{
 
     {% if cert_optional %}
     ssl_client_certificate ca_cert.pem;
+    {% if cert_non_optional %}
+    ssl_verify_client on;
+    {% else %}
     ssl_verify_client optional;
+    {% endif %}
     ssl_verify_depth 1;
     {% endif %}
     

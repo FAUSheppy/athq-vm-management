@@ -144,12 +144,15 @@ class VM:
                 header_line = "proxy_set_header X-Nginx-Cert-Auth false;"
                 cert_optional = False
 
+            cert_non_optional = subdomain.get("cert-non-optional") or False
+
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
                             proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME,
                             basicauth=subdomain.get("basicauth"),
                             extra_location=subdomain.get("extra-location"),
                             cert_optional=cert_optional,
+                            cert_non_optional=cert_non_optional,
                             cert_header_line=header_line)
             components.append(component)
 
