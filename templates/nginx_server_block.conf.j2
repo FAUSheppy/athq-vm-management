@@ -25,7 +25,7 @@ server{
     ssl_verify_depth 1;
     {% endif %}
     
-    {% if extra_location %}
+    {% if extra_location and not extra_location["location"] == "/" %}
     location {{ extra_location["location"] }} {
         {{ extra_location["content"] }}
         {% if extra_location["location-auth"] %}
@@ -38,6 +38,9 @@ server{
     location / {    
         proxy_pass http://{{ targetip }}:{{ targetport }};
         proxy_set_header Host $http_host;
+        {% if extra_location["location"] == "/" %}
+        {{ extra_location["content"] }}
+        {% endif %}
         {{ proxy_pass_blob }}
         {{ cert_header_line }}
         {% if basicauth %}
