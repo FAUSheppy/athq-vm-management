@@ -1,0 +1,18 @@
+map $ssl_preread_server_name $proxy_name {
+    default 127.0.0.1:10443;
+    {% for line in ssl_passthrough_map %}
+    {{ line }}
+    {% endfor %}
+}
+
+server {
+
+    listen 443 ;
+    listen [::]:443 ;
+
+    proxy_timeout 5m;
+    proxy_responses 1;
+    ssl_preread on;
+    proxy_pass $proxy_name;
+    
+}
