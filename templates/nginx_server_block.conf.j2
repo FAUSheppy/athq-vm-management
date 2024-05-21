@@ -1,3 +1,4 @@
+{% if terminate_ssl %}
 server{
 
     # {{ comment }}
@@ -49,8 +50,8 @@ server{
         {% endif %}
     }
 }
+{% endif %}
 
-{% if acme %}
 server{
 
     # {{ comment }}
@@ -58,11 +59,23 @@ server{
     listen 80;
     listen [::]:80;
 
+    {% if include_subdomains %}
+        {% if servernames %}
+            server_name{% for s in servernames %} ~^.*{{ s.replace(".","\\.") }}{% endfor %};
+        {% endif %}
+    {% else %}
     {% if servernames %}server_name{% for s in servernames %} {{ s }}{% endfor %};{% endif %}
+    {% endif %}
 
 
+    {% if acme %}
     include acme-challenge.conf;
     return 301 https://$host$request_uri;
+    {% else %}
+    location / {
+        {{ proxy_pass_blob }}
+        proxy_pass http://{{ targetip }}:80;
+    }
+    {% endif %}
 
 }
-{% endif %}

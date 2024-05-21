@@ -131,7 +131,6 @@ class VM:
 
             if subdomain.get("no-terminate-ssl"):
                 print("Not terminating TLS for: {}".format(subdomain))
-                continue
 
             if type(subdomain) != dict:
                 raise ValueError("Subdomain must be object containing 'name' ")
@@ -150,11 +149,17 @@ class VM:
 
             cert_non_optional = subdomain.get("cert-non-optional") or False
 
+            if subdomain.get("include-subdomains") and not subdomain.get("no-terminate-ssl"):
+                raise ValueError("Wildcard Subdomain not supported with SSL Termination")
+
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
-                            proxy_pass_blob=self.proxy_pass_blob, acme=not self.noTerminateACME,
+                            proxy_pass_blob=self.proxy_pass_blob,
+                            acme=not self.noTerminateACME,
+                            terminate_ssl=not subdomain.get("no-terminate-ssl"),
                             basicauth=subdomain.get("basicauth"),
                             extra_location=subdomain.get("extra-location"),
+                            include_subdomains=subdomain.get("include-subdomains"),
                             cert_optional=cert_optional,
                             cert_non_optional=cert_non_optional,
                             cert_header_line=header_line)
