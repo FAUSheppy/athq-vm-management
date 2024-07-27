@@ -6,3 +6,6 @@
     cd ansible/files/
     git clone git@git_atlantis_hub_content.atlantishq.de:FAUSheppy/atlantis-hub-content.git
 
+# Requires
+
+    apt install wireguard
