@@ -8,11 +8,39 @@ import subprocess
 import datetime
 import pwd
 import grp
+import psutil
 
 BASE_DIR = "/home/backup-atlantis-array/"
 BACKUP_USER_NAME = "backup-atlantis-array"
 BACKUP_USER = pwd.getpwnam(BACKUP_USER_NAME).pw_uid
 BACKUP_GROUP = grp.getgrnam(BACKUP_USER_NAME).gr_gid
+
+LOCKFILE = "lock.rsync"
+
+def wait_for_rsync_to_finish():
+
+    grace_time_rsync = 0
+    while True:
+
+        all_processes = psutil.process_iter(['pid', 'name', 'cmdline'])
+        rsync_processes = []
+        for proc in all_processes:
+            try:
+                if ('rsync' in proc.info['name'] or 
+                    ('cmdline' in proc.info and 'rsync' in ' '.join(proc.info['cmdline']))):
+                    rsync_processes.append(proc.info)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        
+        if len(rsync_processes) == 0:
+            return
+        elif grace_time_rsync > 120*60:
+            print("Rsync took too long, aborting..", file=sys.stderr)
+            sys.exit(1)
+        else:
+            print("Waiting for rsync to finish.. ({}s)".format(grace_time_rsync))
+            grace_time_rsync += 10
+            time.sleep(10)
 
 def list_running_vms(conn):
     running_vms = []
@@ -57,8 +85,15 @@ if __name__ == "__main__":
 
         # shut down VM #
         print("Next:", vm.name())
-        if not vm.name() == "signal":
-            continue
+
+        # create lockfile #
+        lockfile_path = os.path.join(BASE_DIR, LOCKFILE)
+        with open(lockfile_path, "w") as f:
+            f.write("locked")
+        os.chown(lockfile_path, BACKUP_USER, BACKUP_GROUP)
+
+        # wait for any rsync process to finish #
+        wait_for_rsync_to_finish()
 
         vm.shutdown()
         grace_time = 1
@@ -99,7 +134,8 @@ if __name__ == "__main__":
         # start  vm #
         vm.create()
     
-        # wait for atlantis-array to collect the backup
+        # unlock & wait for atlantis-array to collect the backup
+        os.remove(lockfile_path)
         i = 0
         while os.path.isfile(path_img) or os.path.isfile(path_xml):
             print("\rWaiting for array to collect the files ({}s..)".format(i))
