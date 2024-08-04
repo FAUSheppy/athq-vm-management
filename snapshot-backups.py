@@ -127,7 +127,7 @@ if __name__ == "__main__":
         p = subprocess.run(["virt-sparsify", image_src_path, "--compress", path_img])
         if p.returncode != 0:
             print("ERROR: virt-sparsify failed for {}".format(vm.name()), file=sys.stderr)
-            vm.start()
+            vm.create()
             sys.exit(1)
         os.chown(path_img, BACKUP_USER, BACKUP_GROUP)
     
