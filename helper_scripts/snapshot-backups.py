@@ -85,6 +85,18 @@ if __name__ == "__main__":
 
         # shut down VM #
         print("Next:", vm.name())
+        vm_skip_list = ["harbor-registry", "backup", "irc-new", #"kube1",
+                         "kube2", "mail", "monitoring", "paperless",
+                         "prometheus", "signal", "steam-master", "zabbix",
+                         "git", "kathi", "usermanagement", "vpn", "ths", "nextcloud-athq"]
+        if vm.name() in vm_skip_list:
+            continue
+
+        vm_white_list = ["kube1"]
+        if vm_white_list:
+            if not vm.name() in vm_white_list:
+                continue
+
 
         # create lockfile #
         lockfile_path = os.path.join(BASE_DIR, LOCKFILE)
