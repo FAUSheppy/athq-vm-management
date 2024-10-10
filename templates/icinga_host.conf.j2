@@ -15,7 +15,7 @@ object Host "{{ hostname }}" {
     #   groups = ["icingaadmins"]
     # }
 
-    {% for website_name, url in websites %}
+    {% for website_name, url, check_expect in websites %}
     vars.http_vhosts["{{ website_name }}"] = {
         {% if url %}
         http_uri = "{{ url }}"
@@ -23,8 +23,13 @@ object Host "{{ hostname }}" {
         http_uri = "/"
         {% endif %}
         http_address = "{{ website_name }}"
+        http_vhost = "{{ website_name }}"
+        http_sni = true
         http_ssl = true
         http_onredirect = "follow"
+        {% if check_expect %}
+        http_expect = "{{ ','.join(check_expect) }}"
+        {% endif %}
     }
     {% endfor %}
 

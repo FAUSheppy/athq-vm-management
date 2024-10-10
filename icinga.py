@@ -10,7 +10,8 @@ def createMasterHostConfig(vmList):
                 continue
 
             checkDomains = filter(lambda x: not x.get("nocheck"), vmo.subdomains)
-            websites = [ (s["name"], s.get("url")) for s in checkDomains]
+
+            websites = [ (s["name"], s.get("url"), [ str(x) for x in s.get("check-expect") or [] ]) for s in checkDomains]
             f.write(template.render(hostname=vmo.hostname, address=vmo.ip, websites=websites))
 
 def createMasterServiceConfig(vmList):
