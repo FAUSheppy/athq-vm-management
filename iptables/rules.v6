@@ -1,0 +1,4 @@
+*filter
+-A INPUT -p tcp -m tcp --dport 10050 -j DROP      
+-A INPUT -i eno1 -p tcp -m multiport --dports 5044,9200:9210,9300:9310 -j REJECT
+COMMIT

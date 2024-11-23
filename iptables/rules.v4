@@ -1,0 +1,18 @@
+*filter
+-A INPUT -p tcp -m tcp --dport 10050 -j DROP      
+-A FORWARD -d 159.69.136.222 -p tcp -m multiport --dports 26000:27000 -j ACCEPT
+-A FORWARD -d 159.69.136.222 -p udp -m multiport --dports 26000:27000 -j ACCEPT
+-A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT ! -s 159.69.136.222 -o eno1 -j REJECT --reject-with icmp-host-prohibited
+-A INPUT -i eno1 -p tcp -m multiport --dports 5044,9200:9210,9300:9310 -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+
+*nat
+-A PREROUTING -i eno1 -p tcp -m multiport --dports 26000:27000 -j DNAT --to-destination 192.168.122.102
+-A PREROUTING -i eno1 -p udp -m multiport --dports 26000:27000 -j DNAT --to-destination 192.168.122.102
+
+-A POSTROUTING ! -o eno1 -p tcp -m multiport --dports 26000:27000 -d 192.168.122.102 -j SNAT --to-source 192.168.122.1
+-A POSTROUTING ! -o eno1 -p tcp -m multiport --dports 26000:27000 -d 192.168.122.102 -j SNAT --to-source 192.168.122.1
+
+COMMIT
