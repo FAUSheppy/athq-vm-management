@@ -4,8 +4,10 @@ server {
     listen {{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
     listen [::]:{{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
 
+    {% if not extra_content or not "proxy_timeout" in extra_content %}
     proxy_timeout {{ proxy_timeout }};
     proxy_responses 1;
+    {% endif %}
 
     {% if targetportoverwrite %}
     proxy_pass {{ targetip }}:{{ targetportoverwrite }};
