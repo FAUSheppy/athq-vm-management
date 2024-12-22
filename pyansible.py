@@ -16,7 +16,7 @@ def dump_config(vmList):
                 f.write("\n")
     
     # dump ansible
-    with open("./ansible/files/nsca_server.conf", "w") as f:
+    with open("./ansible/templates/nsca_server.conf", "w") as f:
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
         template = env.get_template("nsca_server.conf.j2")
         f.write(template.render(vmList=sorted(list(set(filter(lambda x: x.ansible, vmList)))),
