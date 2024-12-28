@@ -62,6 +62,8 @@ class VM:
 
             name = str(portStruct.get("name")).replace(" ", "")
             portstring = str(portStruct.get("port")).replace(" ", "")
+            port_interfaces = portStruct.get("interfaces")
+            assert(port_interfaces is None or type(port_interfaces) == list)
             transparent = portStruct.get("transparent")
             proto = portStruct.get("proto") or "tcp"
             isUDP = proto == "udp"
@@ -75,7 +77,9 @@ class VM:
 
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
                                         transparent=transparent, proxy_timeout=proxy_timeout,
-                                        comment=compositeName, extra_content=extra_content)
+                                        comment=compositeName, extra_content=extra_content,
+                                        port_interfaces=port_interfaces)
+
             components.append(component)
 
         return components

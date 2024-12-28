@@ -1,8 +1,26 @@
 server {
 
     # {{ comment }}
+    {% if port_interfaces %}
+
+        {% if "ipv4-all" in port_interfaces %}
+    listen {{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
+        {% endif %}
+
+        {% if "ipv6-all" in port_interfaces %}
+    listen [::]:{{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
+        {% endif %}
+
+        {% for pi in port_interfaces %}
+        {% if not pi.startswith("ipv") %}
+    listen {{ pi }}:{{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
+        {% endif %}
+        {% endfor %}
+
+    {% else %}
     listen {{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
     listen [::]:{{ portstring }} {% if udp %} udp {% endif %}{% if ssl %} ssl {% endif %};
+    {% endif %}
 
     {% if not extra_content or not "proxy_timeout" in extra_content %}
     proxy_timeout {{ proxy_timeout }};
