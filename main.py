@@ -21,6 +21,7 @@ if __name__ == "__main__":
     parser.add_argument("--skip-nginx",      action="store_const", default=True, const=False)
     parser.add_argument("--skip-icinga",     action="store_const", default=True, const=False)
     parser.add_argument("--skip-ssh-config", action="store_const", default=True, const=False)
+    parser.add_argument("--do-nginx-map-cert-manager", action="store_const", default=False, const=True)
     args = parser.parse_args()
 
     FILE = "./config/vms.json"
@@ -65,5 +66,5 @@ if __name__ == "__main__":
                                            icingaOnly=not args.backup)
 
     # copy nginx maps #
-    if not args.backup:
+    if not args.backup and args.do_nginx_map_cert_manager:
         os.system("rsync templates/nginx_maps.j2 root@192.168.122.104:/data/certificate-manager/")
