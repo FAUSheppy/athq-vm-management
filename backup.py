@@ -185,12 +185,20 @@ def sizeChanged(hostname, pathsToOptions, path):
         return True
 
     # check server #
-    cmd = ["ssh", hostname,  "-t", "/opt/check_dir_size_for_backup.py", path ]
+    cmd = [
+        "ssh", hostname,
+        "-o", "PasswordAuthentication=no",
+        "-o", "ConnectTimeout=3",
+        "-t", "/opt/check_dir_size_for_backup.py",
+        path
+    ]
+
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, encoding="utf-8") 
     stdout, stderr = p.communicate()
     if p.wait() != 0:
-        raise OSError("ssh commmand for backup size info failed '{}' - '{}' Host: {}".format(
+        print("Warning: ssh commmand for backup size info failed '{}' - '{}' Host: {}".format(
                 stderr, stdout, hostname))
+        return []
 
     # parse response #
     result = json.loads(stdout)
