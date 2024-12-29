@@ -6,7 +6,7 @@ import json
 
 environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
-def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
+def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False, backup_no_async_icinga=True):
 
 
     backupPath = "./build/backup/"
@@ -107,7 +107,8 @@ def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False):
 
         rsyncScript = rsyncScriptTemplate.render(hostname=hostname, token=icingaToken,
                                                  hostname_base=hostnameBase,
-                                                 size_change_commands=sizeChangeNotifyCommands)
+                                                 size_change_commands=sizeChangeNotifyCommands,
+                                                 backup_no_async_icinga=backup_no_async_icinga)
        
         # build all filter #
         rsyncFilterAll = rsyncFilterTemplate.render(paths=pathsAll)

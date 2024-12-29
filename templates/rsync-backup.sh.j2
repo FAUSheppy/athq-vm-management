@@ -45,8 +45,10 @@ SERVICE="backup_{{ hostname_base }}"
 TOKEN="{{ token }}"
 
 if [ $RSYNC_SUCCESS -eq 0 ]; then
+  {% if not backup_no_async_icinga %}
   curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
     "{\"service\": \"${SERVICE}\", \"token\": \"${TOKEN}\", \"status\": \"OK\", \"info\": \"\"}"
+  {% endif %}
 
   # if size changed was copied save new size #
   {% if not size_change_commands %}
@@ -56,8 +58,10 @@ if [ $RSYNC_SUCCESS -eq 0 ]; then
       {{ cmd }}
   {% endfor %}
 else
+  {% if not backup_no_async_icinga %}
   curl -H "${CONTENT_TYPE}" -X POST "${ASYNC_ICINGA_ADDRESS}" -d \
     "{\"service\": \"${SERVICE}\", \"token\": \"${TOKEN}\", \"status\": \"CRITICAL\", \"info\": \"\"}"
+  {% endif %}
 fi
 
 cd ..
