@@ -88,18 +88,19 @@ if __name__ == "__main__":
         vm_skip_list = ["harbor-registry", "backup", #"irc-new", #"kube1",
                          "kube2", 
                          "kube1", 
-                        #"mail", 
+                        "mail", 
+                        "opensearch",
                         "monitoring", 
-                        #"paperless",
+                        "paperless",
                          "prometheus", "signal", 
                         "steam-master", "zabbix",
                         "git", 
-                        #"kathi", "usermanagement", "vpn", "ths", "nextcloud-athq"
+                        "kathi", "usermanagement", "vpn", "ths", "nextcloud-athq"
                         ]
         if vm.name() in vm_skip_list:
             continue
 
-        vm_white_list = []
+        vm_white_list = ["kathi"]
         if vm_white_list:
             if not vm.name() in vm_white_list:
                 continue
