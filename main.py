@@ -22,13 +22,20 @@ if __name__ == "__main__":
     parser.add_argument("--skip-icinga",     action="store_const", default=True, const=False)
     parser.add_argument("--skip-ssh-config", action="store_const", default=True, const=False)
     parser.add_argument("--do-nginx-map-cert-manager", action="store_const", default=False, const=True)
+    parser.add_argument("--backup-no-async-icinga", action="store_const", default=False, const=True)
     args = parser.parse_args()
 
     FILE = "./config/vms.json"
     vmList = []
     skipVirsh = not any([args.skip_ansible, args.skip_nginx, 
                          args.skip_icinga, args.skip_ssh_config])
-        
+
+    # set master address #
+    OPTIONAL_MASTER_ADDRESS_FILE="master-address.txt"
+    if os.path.isfile(OPTIONAL_MASTER_ADDRESS_FILE):
+        with open(OPTIONAL_MASTER_ADDRESS_FILE) as f:
+            MASTER_ADDRESS = f.read().strip()
+
     with open(FILE) as f:
         jsonList = json.load(f)
         for obj in jsonList:
@@ -63,7 +70,8 @@ if __name__ == "__main__":
     # backup #
     with open("./config/backup.json") as f:
         backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS,
-                                           icingaOnly=not args.backup)
+                                           icingaOnly=not args.backup,
+                                           backup_no_async_icinga=args.backup_no_async_icinga)
 
     # copy nginx maps #
     if not args.backup and args.do_nginx_map_cert_manager:
