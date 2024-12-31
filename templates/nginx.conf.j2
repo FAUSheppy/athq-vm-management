@@ -44,6 +44,10 @@ http {
 	access_log /var/log/nginx/access.log;
 	error_log /var/log/nginx/error.log;
 
+    # Increase the buffer size for headers
+    proxy_buffer_size          16k;
+    proxy_buffers              4 16k;
+    proxy_busy_buffers_size    16k;
     client_header_buffer_size 5120k;
     large_client_header_buffers 16 5120k;
 
