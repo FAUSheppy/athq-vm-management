@@ -69,6 +69,7 @@ class VM:
             isUDP = proto == "udp"
             proxy_timeout = portStruct.get("proxy_timeout") or "10s"
             extra_content = portStruct.get("extra-content")
+            targetportoverwrite = portStruct.get("targetportoverwrite")
 
             compositeName = "-".join((self.hostname, name, portstring, proto))
 
@@ -78,6 +79,7 @@ class VM:
             component = template.render(targetip=self.ip, udp=isUDP, portstring=portstring,
                                         transparent=transparent, proxy_timeout=proxy_timeout,
                                         comment=compositeName, extra_content=extra_content,
+                                        targetportoverwrite=targetportoverwrite,
                                         port_interfaces=port_interfaces)
 
             components.append(component)
