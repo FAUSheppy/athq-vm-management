@@ -3,6 +3,7 @@ import functools
 import os
 import subprocess
 import json
+import sys
 
 environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
 
@@ -19,6 +20,15 @@ def createBackupScriptStructure(backupList, baseDomain="", icingaOnly=False, bac
     scriptNames = []
     asyncIcingaConf = {}
     for backup in backupList:
+
+        if not backup:
+            print("Warning: Empty backup mapping in List", file=sys.stderr)
+            continue
+
+        if type(backup) == str:
+            print(f"Warning: Backup Entry is a stirng instead of a dict-object ({backup})", file=sys.stderr)
+            continue
+
 
         if backup.get("disabled"):
             continue
