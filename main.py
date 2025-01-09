@@ -68,10 +68,14 @@ if __name__ == "__main__":
                 f.write("\n")
 
     # backup #
-    with open("./config/backup.json") as f:
-        backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS,
-                                           icingaOnly=not args.backup,
-                                           backup_no_async_icinga=args.backup_no_async_icinga)
+    try:
+        with open("./config/backup.json") as f:
+            backup.createBackupScriptStructure(json.load(f), baseDomain=MASTER_ADDRESS,
+                                               icingaOnly=not args.backup,
+                                               backup_no_async_icinga=args.backup_no_async_icinga)
+    except json.decoder.JSONDecodeError as e:
+        print("WARNING: Failed loading backup.json - either empty or invalid json!", file=sys.stderr)
+        print(e, file=sys.stderr)
 
     # copy nginx maps #
     if not args.backup and args.do_nginx_map_cert_manager:
