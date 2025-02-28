@@ -74,7 +74,11 @@ server{
     {% else %}
     location / {
         {{ proxy_pass_blob }}
+        {% if http_target_port %}
+        proxy_pass http://{{ targetip }}:{{ http_target_port }};
+        {% else %}
         proxy_pass http://{{ targetip }}:80;
+        {% endif %}
     }
     {% endif %}
 

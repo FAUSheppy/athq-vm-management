@@ -26,20 +26,21 @@ def dump_config(vmList, masterAddress):
             [ f.write(c) for c in vmo.dumpIptables(remove=True)]
 
     with open("/etc/nginx/stream_include.conf", "w") as f:
-        
+
         # ssl passthrough/no-terminate #
         ssl_passthrough_map = []
         for vmo in vmList:
             relevant_subdomains = filter(lambda x: x.get("no-terminate-ssl"), vmo.subdomains)
             for s in relevant_subdomains:
-                print(s)
+                print(s, "ssl_target_port", s.get("ssl_target_port"))
                 # build the map contents #
                 if s.get("include-subdomains"):
                     match = "~.*{}".format(s.get("name"))
                 else:
                     match = s.get("name")
 
-                ssl_passthrough_map.append("{} {}:443;".format(match, vmo.ip))
+                ssl_target_port = s.get("ssl_target_port") or 443
+                ssl_passthrough_map.append("{} {}:{};".format(match, vmo.ip, ssl_target_port))
 
         environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
         template = environment.get_template("nginx_stream_ssl_map.conf.j2")
