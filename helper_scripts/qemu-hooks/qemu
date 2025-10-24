@@ -1,0 +1,12 @@
+#!/bin/bash
+if [[ "$2" == "started" ]]; then
+
+    /usr/sbin/iptables -I LIBVIRT_FWI 1 -o virbr0 -i atlantishq  -d 192.168.123.0/24 -j ACCEPT
+    /usr/sbin/iptables -I LIBVIRT_FWI 1 -o virbr0 -i at_helsinki -d 192.168.123.0/24 -j ACCEPT
+    /usr/sbin/iptables -I LIBVIRT_FWI 1 -o virbr0 -i hc_worker_1 -d 192.168.123.0/24 -j ACCEPT
+
+    /usr/sbin/iptables -I LIBVIRT_FWO 1 -i virbr0 -s 192.168.123.0/24 -o atlantishq  -j ACCEPT
+    /usr/sbin/iptables -I LIBVIRT_FWO 1 -i virbr0 -s 192.168.123.0/24 -o hc_worker_1 -j ACCEPT
+    /usr/sbin/iptables -I LIBVIRT_FWO 1 -i virbr0 -s 192.168.123.0/24 -o at_helsinki -j ACCEPT
+
+fi
