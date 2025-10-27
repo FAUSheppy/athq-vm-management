@@ -1,4 +1,5 @@
 import libvirt
+import json
 import jinja2
 
 class VM:
@@ -157,6 +158,10 @@ class VM:
 
             if subdomain.get("include-subdomains") and not subdomain.get("no-terminate-ssl"):
                 raise ValueError("Wildcard Subdomain not supported with SSL Termination")
+
+            if "port" in subdomain and "no-terminate-ssl" in subdomain:
+                print(json.dumps(subdomain, indent=2))
+                raise ValueError("'port' is not allowed with no-terminate-ssl subdomain, use http_target_port and ssl_target_port")
 
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
