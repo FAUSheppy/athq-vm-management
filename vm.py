@@ -37,6 +37,8 @@ class VM:
             network = con.networkLookupByName(self.network)
             leases = network.DHCPLeases()
             for l in leases:
+                if not l.get("type") == 0: # FIXME: only ipv4 for now
+                    continue
                 if l.get("hostname") == self.hostname:
                     return l
         
@@ -92,7 +94,14 @@ class VM:
         components = []
         template = self.environment.get_template("nginx_stream_block.conf.j2")
         if not self.isExternal:
-            self.sshOutsidePort = 7000 + int(self.ip.split(".")[-1])
+
+            try:
+                self.sshOutsidePort = 7000 + int(self.ip.split(".")[-1])
+            except ValueError as e:
+                print(f"Warning: {self.hostname} Invalid IP (IPv6 is not supported) {e}",
+                        file=sys.stderr)
+                return []
+
             component = template.render(targetip=self.ip, udp=False,
                                             portstring=self.sshOutsidePort,
                                             targetportoverwrite=7000,
