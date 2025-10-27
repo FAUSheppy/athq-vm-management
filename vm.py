@@ -146,7 +146,7 @@ class VM:
         for subdomain in self.subdomains:
 
             if subdomain.get("no-terminate-ssl"):
-                print("Not terminating TLS for: {}".format(subdomain))
+                print("Not terminating TLS for: {}".format(subdomain.get("name")))
 
             if type(subdomain) != dict:
                 raise ValueError("Subdomain must be object containing 'name' ")

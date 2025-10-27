@@ -32,7 +32,7 @@ def dump_config(vmList, masterAddress):
         for vmo in vmList:
             relevant_subdomains = filter(lambda x: x.get("no-terminate-ssl"), vmo.subdomains)
             for s in relevant_subdomains:
-                print(s, "ssl_target_port", s.get("ssl_target_port"))
+                # print(s, "ssl_target_port", s.get("ssl_target_port"))
                 # build the map contents #
                 if s.get("include-subdomains"):
                     match = "~.*{}".format(s.get("name"))
@@ -66,7 +66,7 @@ def dump_config(vmList, masterAddress):
         for vmo in vmList:
             for subdomain in vmo.subdomains:
                 if vmo.noTerminateACME:
-                    print("Not terminating ACME for: {}".format(subdomain))
+                    print("Not terminating ACME for: {}".format(subdomain.get("name")))
                     continue
                 if type(subdomain) == dict:
                     domains.append(subdomain["name"])
@@ -95,10 +95,10 @@ def dump_config(vmList, masterAddress):
             f.write(content)
 
 def check_transparent_proxy_loader():
-    retcode = os.system("systemctl is-enabled nginx-iptables.service")
+    retcode = os.system("systemctl -q is-enabled nginx-iptables.service")
     if retcode != 0:
         print("############################ WARNING ###############################")
         print("+++ You may have transparent proxy rules but the service to load +++")
         print("+++ them is not enabled or missing, a restart WILL break your    +++")
-        print("+++ setup! Add see nginx-iptables.service in the project root    +++")
+        print("+++ setup! Look at nginx-iptables.service in the project root    +++")
         print("############################ WARNING ###############################")
