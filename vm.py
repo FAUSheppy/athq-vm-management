@@ -172,10 +172,14 @@ class VM:
                 print(json.dumps(subdomain, indent=2))
                 raise ValueError("'port' is not allowed with no-terminate-ssl subdomain, use http_target_port and ssl_target_port")
 
+            if "port" in subdomain and "remote_url" in subdomain:
+                raise ValueError("'port' is unsupported with 'remote_url', remote_url must container scheme://host:port all in one")
+
             component = template.render(targetip=self.ip, targetport=targetport, 
                             servernames=[subdomain["name"]], comment=compositeName,
                             proxy_pass_blob=self.proxy_pass_blob,
                             acme=not self.noTerminateACME,
+                            remote_url=subdomain.get("remote_url"),
                             terminate_ssl=not subdomain.get("no-terminate-ssl"),
                             basicauth=subdomain.get("basicauth"),
                             extra_location=subdomain.get("extra-location"),

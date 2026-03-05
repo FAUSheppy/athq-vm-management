@@ -2,7 +2,7 @@
 server{
 
     # {{ comment }}
-    
+
     listen 10443 ssl;
     listen [::]:10443 ssl;
 
@@ -25,7 +25,7 @@ server{
     {% endif %}
     ssl_verify_depth 1;
     {% endif %}
-    
+
     {% if extra_location and not extra_location["location"] == "/" %}
     location {{ extra_location["location"] }} {
         {{ extra_location["content"] }}
@@ -36,26 +36,34 @@ server{
     }
     {% endif %}
 
-    location / {    
+    {% if remote_url %}
+    location / {
+        proxy_pass {{ remote_url }};
+        proxy_ssl_server_name on;
+        proxy_set_header Host $proxy_host;
+    }
+    {% else %}
+    location / {
         proxy_pass http://{{ targetip }}:{{ targetport }};
         proxy_set_header Host $http_host;
         {% if extra_location["location"] == "/" %}
         {{ extra_location["content"] }}
         {% endif %}
-        {{ proxy_pass_blob }}
         {{ cert_header_line }}
+        {{ proxy_pass_blob }}
         {% if basicauth %}
         auth_basic "{{ basicauth }}";
         auth_basic_user_file /etc/nginx/{{ basicauth }}.htpasswd;
         {% endif %}
     }
+    {% endif %}
 }
 {% endif %}
 
 server{
 
     # {{ comment }}
-    
+
     listen 80;
     listen [::]:80;
 
