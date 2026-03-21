@@ -5,14 +5,45 @@ map $ssl_preread_server_name $proxy_name {
     {% endfor %}
 }
 
+geo $priviledged_networks {
+    default 0;
+    127.0.0.0/24 1;
+    159.69.136.222 1;      # atlantishq
+    95.217.57.49 1;        # atlantis-helsinki
+    142.132.212.54 1;      # katzencluster
+    10.0.0.0/8 1;          # wireguard & k3s
+    192.168.122.0/24 1;    # atlantishq-vms
+    192.168.123.0/24 1;    # katzencluster-vms
+    192.168.124.0/24 1;    # athq-helsinki-vms
+    192.168.125.0/24 1;    # reserved/vm test net
+    135.181.80.154 1;      # postgres master
+    46.62.175.169 1;       # postgres replica
+}
+
+map $block_connection $proxy_target {
+    1 127.0.0.1:1;   # blackhole (connection fails)
+    0 $proxy_name;
+}
+
+map $ssl_preread_server_name $is_restricted {
+    default 0;
+    ~^immich-ml\.services\.atlantishq\.de$ 1;
+}
+
+map "$is_restricted:$priviledged_networks" $block_connection {
+    default 0;
+    "1:0" 1;
+}
+
 server {
 
     listen 443 ;
     listen [::]:443 ;
 
+
     proxy_timeout 5m;
     proxy_responses 1;
     ssl_preread on;
-    proxy_pass $proxy_name;
+    proxy_pass $proxy_target;
     
 }
