@@ -12,12 +12,17 @@ geo $priviledged_networks {
     95.217.57.49 1;        # atlantis-helsinki
     142.132.212.54 1;      # katzencluster
     10.0.0.0/8 1;          # wireguard & k3s
+    176.16.1.0/24 1;       # openvon
     192.168.122.0/24 1;    # atlantishq-vms
     192.168.123.0/24 1;    # katzencluster-vms
     192.168.124.0/24 1;    # athq-helsinki-vms
     192.168.125.0/24 1;    # reserved/vm test net
     135.181.80.154 1;      # postgres master
     46.62.175.169 1;       # postgres replica
+
+    2a01:4f8:262:50aa::/64 1; # katzencluster v6
+    2a01:4f8:231:1d5c::/64 1; # atlantishq v6
+    2a01:4f9:4a:112f::/64  1; # athq helsinki v6
 }
 
 map $block_connection $proxy_target {
