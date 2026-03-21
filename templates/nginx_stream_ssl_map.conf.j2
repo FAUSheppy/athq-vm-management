@@ -32,10 +32,16 @@ map $block_connection $proxy_target {
 
 map $ssl_preread_server_name $is_restricted {
     default 0;
+    {% for pattern, selected_network in network_restrictions.items() %}
+    {{ pattern }} 1;
+    {% endfor %}
     ~^immich-ml\.services\.atlantishq\.de$ 1;
 }
 
 map $ssl_preread_server_name $selected_network {
+    {% for pattern, selected_network in network_restrictions.items() %}
+    {{ pattern }} ${{ selected_network}};
+    {% endfor %}
     ~^immich-ml\.services\.atlantishq\.de$ $priviledged_networks;
 }
 

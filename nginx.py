@@ -34,8 +34,10 @@ def dump_config(vmList, masterAddress):
         for vmo in vmList:
             relevant_subdomains = filter(lambda x: x.get("no-terminate-ssl"), vmo.subdomains)
             for s in relevant_subdomains:
+
                 # print(s, "ssl_target_port", s.get("ssl_target_port"))
                 # build the map contents #
+
                 if s.get("include-subdomains"):
                     match = "~.*{}".format(s.get("name"))
                 else:
@@ -44,6 +46,14 @@ def dump_config(vmList, masterAddress):
                 geo_restriction = s.get("network-restriction")
                 if geo_restriction:
                     network_restrictions.update({ match: geo_restriction })
+                    with open("templates/nginx_stream_ssl_map.conf.j2") as test:
+                        test_string = f"geo ${geo_restriction}"
+                        if test_string not in test.read():
+                            msg = f"{test_string} not defined in stream map."
+                            msg += "\nYou need to define it in "
+                            msg += "'templates/nginx_stream_ssl_map.conf.j2' first.\n"
+                            msg += "See geo \"$priviledged_networks {{...}}\" as an example"
+                            raise ValueError(msg)
 
 
                 ssl_target_port = s.get("ssl_target_port") or 443
