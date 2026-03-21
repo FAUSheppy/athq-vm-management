@@ -35,14 +35,12 @@ map $ssl_preread_server_name $is_restricted {
     {% for pattern, selected_network in network_restrictions.items() %}
     {{ pattern }} 1;
     {% endfor %}
-    ~^immich-ml\.services\.atlantishq\.de$ 1;
 }
 
 map $ssl_preread_server_name $selected_network {
     {% for pattern, selected_network in network_restrictions.items() %}
     {{ pattern }} ${{ selected_network}};
     {% endfor %}
-    ~^immich-ml\.services\.atlantishq\.de$ $priviledged_networks;
 }
 
 map "$is_restricted:$selected_network" $block_connection {
