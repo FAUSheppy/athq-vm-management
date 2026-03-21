@@ -29,6 +29,8 @@ def dump_config(vmList, masterAddress):
 
         # ssl passthrough/no-terminate #
         ssl_passthrough_map = []
+        network_restrictions = {}
+
         for vmo in vmList:
             relevant_subdomains = filter(lambda x: x.get("no-terminate-ssl"), vmo.subdomains)
             for s in relevant_subdomains:
@@ -39,12 +41,22 @@ def dump_config(vmList, masterAddress):
                 else:
                     match = s.get("name")
 
+                geo_restriction = s.get("network-restriction")
+                if geo_restriction:
+                    network_restrictions.update({ match: geo_restriction })
+
+
                 ssl_target_port = s.get("ssl_target_port") or 443
                 ssl_passthrough_map.append("{} {}:{};".format(match, vmo.ip, ssl_target_port))
 
         environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
         template = environment.get_template("nginx_stream_ssl_map.conf.j2")
-        f.write(template.render(ssl_passthrough_map=ssl_passthrough_map))
+        f.write(
+            template.render(
+                ssl_passthrough_map=ssl_passthrough_map,
+                network_restrictions=network_restrictions
+            )
+        )
 
 
         for vmo in vmList:
