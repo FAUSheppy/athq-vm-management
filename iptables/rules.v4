@@ -6,6 +6,12 @@
 -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 -A OUTPUT ! -s 159.69.136.222 -o eno1 -j REJECT --reject-with icmp-host-prohibited
 -A INPUT -i eno1 -p tcp -m multiport --dports 5044,9200:9210,9300:9310 -j REJECT --reject-with icmp-host-prohibited
+
+-A FORWARD -d 192.168.122.110/32 -p tcp -m tcp --dport 5432 -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -s 192.168.122.110/32 -p tcp -m tcp --sport 5432 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -d 192.168.122.110/32 -p tcp -m tcp --dport 5432 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -s 192.168.122.110/32 -p tcp -m tcp --sport 5432 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEP
+
 COMMIT
 
 *nat
@@ -14,5 +20,9 @@ COMMIT
 
 -A POSTROUTING ! -o eno1 -p tcp -m multiport --dports 26000:27000 -d 192.168.122.102 -j SNAT --to-source 192.168.122.1
 -A POSTROUTING ! -o eno1 -p tcp -m multiport --dports 26000:27000 -d 192.168.122.102 -j SNAT --to-source 192.168.122.1
+
+-A PREROUTING -p tcp -m tcp --dport 5432 -j DNAT --to-destination 192.168.122.110:5432
+-A PREROUTING -p tcp -m tcp --dport 5432 -j DNAT --to-destination 192.168.122.110:5432
+
 
 COMMIT
