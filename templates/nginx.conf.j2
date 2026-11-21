@@ -60,6 +60,16 @@ http {
     include http_include.conf;
 
     server{
+        listen 10443 ssl default_server;
+        listen [::]:10443 ssl default_server;
+        server_name _;
+        location / {
+            root /var/www/html/;
+            try_files /missing-server-block-warning.html =404;
+        }
+    }
+
+    server{
         listen 80 default;
         listen [::]:80 default;
 
