@@ -42,6 +42,11 @@ server{
         proxy_ssl_server_name on;
         proxy_set_header Host $proxy_host;
     }
+    {% elif static %}
+    location / {
+        root /var/www/html/;
+        try_files /{{ static }} =404;
+    }
     {% else %}
     location / {
         proxy_pass http://{{ targetip }}:{{ targetport }};

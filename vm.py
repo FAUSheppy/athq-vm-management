@@ -187,7 +187,8 @@ class VM:
                             cert_optional=cert_optional,
                             cert_non_optional=cert_non_optional,
                             http_target_port=subdomain.get("http_target_port"),
-                            cert_header_line=header_line)
+                            cert_header_line=header_line,
+                            static=subdomain.get("static"))
             components.append(component)
 
         return components
